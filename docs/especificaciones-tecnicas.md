@@ -2,7 +2,7 @@
 
 Versión 1.1 · 10 de noviembre de 2026 · Estado: **propuesta para revisar con el equipo**
 
-Este documento define cómo se va a construir la app: stack, base de datos, reglas de negocio en el servidor, API, estructura del código y entorno. Sale de los requerimientos (RF-01 a RF-29), de los requisitos académicos de Móvil II y del diseño en Figma.
+Este documento define cómo se va a construir la app: stack, base de datos, reglas de negocio en el servidor, API, estructura del código y entorno. Sale de los requerimientos (RF-01 a RF-30), de los requisitos académicos de Móvil II y del diseño en Figma.
 
 Las decisiones que dependen de los huecos de los requerimientos están marcadas con **⚠ Por confirmar**. Cada una tiene una opción propuesta para no frenar el desarrollo, y la sección 11 las reúne todas.
 
@@ -70,7 +70,7 @@ horario_atencion   bloqueos_recurrentes   bloqueos   configuracion (1 fila)
 | --- | --- | --- |
 | `perfiles` | Datos y rol de cada cuenta (1 a 1 con `auth.users`) | `id`, `rol` (`paciente`/`odontologo`), `nombre`, `telefono`, `correo` |
 | `pacientes` | Paciente como persona. Puede no tener cuenta si el doctor lo agendó por teléfono (RF-07) | `id`, `perfil_id` (opcional), `nombre`, `telefono`, `correo` |
-| `servicios` | Catálogo con duración, precio y tipo de confirmación (RF-08, RF-10, RF-28) | `nombre`, `duracion_min` (15–180, múltiplo de 15), `precio_cop`, `confirmacion` (`inmediata`/`aprobacion`), `activo` |
+| `servicios` | Catálogo con duración, precio y tipo de confirmación (RF-08, RF-10, RF-28, RF-30) | `nombre`, `duracion_min` (15–180, múltiplo de 15), `precio_cop`, `confirmacion` (`inmediata`/`aprobacion`), `activo` |
 | `horario_atencion` | Horario por día de la semana | `dia_semana` (0 = domingo), `hora_inicio`, `hora_fin` |
 | `bloqueos_recurrentes` | Bloqueos que se repiten, como el almuerzo | `dia_semana`, `hora_inicio`, `hora_fin`, `motivo` |
 | `bloqueos` | Bloqueos puntuales (RF-19) | `rango` (`tstzrange`), `motivo` |
@@ -467,6 +467,7 @@ Toda consulta muestra carga, error con «Reintentar», vacío y sin conexión, c
 
 - Validación con **zod** y mensajes específicos en español. Los formularios se manejan con `useState` para que sea fácil explicarlos en la sustentación.
 - `KeyboardAvoidingView` y `ScrollView` para que el teclado no tape los campos.
+- **Precio del servicio (RF-30, C02):** obligatorio, solo números enteros en pesos y no negativo. Mensajes: «Escribe el precio del servicio.», «Escribe solo números, sin puntos ni signos.» y «El precio no puede ser negativo.».
 - **Registro (RF-01):** nombre obligatorio; teléfono de 10 dígitos que empiece por 3; correo válido; contraseña de mínimo 8 caracteres con al menos una letra y un número, como dice A04.
 
 ---
@@ -562,7 +563,7 @@ Cada una tiene una propuesta para poder avanzar. Si el equipo decide otra cosa, 
 | D1 | ¿El paciente ve la lista real de franjas o el número que da la fórmula? | Lista real (algoritmo de 4.3); la fórmula se muestra como capacidad en C02 | `calcularFranjas`, S03, C02 |
 | D2 | ¿Cómo se crea la cuenta del odontólogo y qué pasa con el paciente que llamó y no tiene cuenta? | El odontólogo se crea a mano en Supabase (Auth + `rol = odontologo` en el seed). El paciente sin cuenta queda en `pacientes` sin `perfil_id`, y si después se registra con el mismo teléfono se vincula solo | `pacientes`, trigger de registro, O09 |
 | D3 | ~~¿La anticipación también aplica para agendar?~~ | **Decidido:** son dos valores aparte en C04, «para agendar» y «para cancelar o reprogramar», ambos en 24 h por defecto | `configuracion`, `solicitar_cita`, `calcularFranjas` |
-| D9 | ¿Precios reales de cada servicio? | Precio fijo por servicio en COP, con valores de ejemplo. El pago se hace en el consultorio; la app no cobra | `servicios.precio_cop`, S01, S06, C01, C02 |
+| D9 | ¿Precios reales de cada servicio? (RF-30 ya está en los requerimientos) | Precio fijo por servicio en COP, con valores de ejemplo. El pago se hace en el consultorio; la app no cobra | `servicios.precio_cop`, S01, S06, C01, C02 |
 | D4 | ¿Push reales (development build) o solo avisos en la app y recordatorio local? | Push reales con un build de EAS, y avisos en la app como respaldo | Sección 7, Edge Function |
 | D5 | ¿Cuánto antes llega el recordatorio y a qué hora el resumen diario? | 24 h antes; resumen a las 8:00 a. m. | `configuracion`, pg_cron |
 | D6 | ¿El odontólogo puede cancelar y reprogramar? ¿Con el mismo límite de 24 h? | Sí, sin límite de anticipación (es su agenda); el paciente recibe el aviso | `cancelar_cita`, `reprogramar_cita`, O08 |

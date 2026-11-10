@@ -15,7 +15,7 @@ El diseño del frontend está completo en Figma (wireframes, flujo de navegació
 
 - Proyecto_Final_Movil_II.docx: requisitos académicos (navegación, estado, HTTP, mapas, entrega).
 - CLIENTE Y PROBLEMA.docx: alcance acordado con el cliente.
-- requerimientos_funcionales_app_citasFinal.pdf: RF-01 a RF-27, más el RF-28 y el RF-29 que agregamos.
+- requerimientos_funcionales_app_citasFinal.pdf: RF-01 a RF-27, más el RF-28, el RF-29 y el RF-30 que agregamos.
 - Auditoria_Wireframes_Navegacion.md: auditoría externa de los wireframes.
 
 **Dónde está todo**
@@ -29,8 +29,8 @@ Hay 4 páginas en Figma con 58 pantallas en gris y las mismas 58 a color, más 3
 
 | Entregable | Dónde | Qué contiene |
 | --- | --- | --- |
-| CLIENTE Y PROBLEMA (actualizado).docx | Carpeta del Escritorio | Fila nueva "Cálculo de franjas disponibles (contador contextual)" en la tabla de alcance; las filas de agendamiento y de cancelar y reprogramar mencionan las dos anticipaciones (24 h por defecto) |
-| requerimientos_funcionales_app_citasFinal (actualizado).pdf | Carpeta del Escritorio | Páginas 1–7 originales + página 8 con el RF-28 (4 escenarios) + página 9 con el RF-29, anticipación mínima para agendar (3 escenarios) |
+| CLIENTE Y PROBLEMA (actualizado).docx | Carpeta del Escritorio | Fila nueva "Cálculo de franjas disponibles (contador contextual)" en la tabla de alcance; las filas de agendamiento y de cancelar y reprogramar mencionan las dos anticipaciones (24 h por defecto); fila nueva "Precio por servicio" y los pagos en línea quedan fuera del alcance |
+| requerimientos_funcionales_app_citasFinal (actualizado).pdf | Carpeta del Escritorio | Páginas 1–7 originales + página 8 con el RF-28 (4 escenarios) + página 9 con el RF-29, anticipación mínima para agendar (3 escenarios) + página 10 con el RF-30, precio por servicio (3 escenarios) |
 | Datos_ejemplo_wireframes.md | Carpeta del Escritorio | Fechas, agenda, servicios y la fórmula única de franjas que usan todas las pantallas |
 | 🧱 Fundamentos | Figma | 4 logos vectoriales (logotipo y monograma CB, en navy y blanco), 22 variables de color, 9 estilos de texto Poppins |
 | 📐 Wireframes | Figma | 58 pantallas en 7 secciones + componentes; cada pantalla con su ruta de Expo Router y una nota de navegación; corregidas según la auditoría |
@@ -40,7 +40,7 @@ Hay 4 páginas en Figma con 58 pantallas en gris y las mismas 58 a color, más 3
 **Cobertura del diseño**
 
 - **Navegación:** Stack, Tabs y Drawer para los dos roles; inicio definido (A00) con redirección por rol; rutas dinámicas `cita/[id]` (con caso inexistente) y `solicitud/[id]`.
-- **Requerimientos:** RF-01 a RF-29 tienen pantalla (RF-29 en C04 y S03), incluidos registro, agendamiento, confirmación o aprobación, cancelar y reprogramar, recordatorios, agenda diaria y semanal, bloqueos y mapa.
+- **Requerimientos:** RF-01 a RF-30 tienen pantalla (RF-29 en C04 y S03; RF-30 en S01, S06, C01 y C02), incluidos registro, agendamiento, confirmación o aprobación, cancelar y reprogramar, recordatorios, agenda diaria y semanal, bloqueos y mapa.
 - **Estados:** carga, vacío, error con reintentar, sin conexión, acceso denegado, permiso de ubicación, GPS no disponible y fallo del mapa.
 - **Requisitos académicos:** contador con límites, cálculo con validaciones, formularios con mensajes específicos, búsqueda y filtros, componentes reutilizables y cambios observables (avisos breves tras cada acción).
 
