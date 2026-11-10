@@ -35,7 +35,7 @@ Hay 4 páginas en Figma con 58 pantallas en gris y las mismas 58 a color, más 3
 | 🧱 Fundamentos | Figma | 4 logos vectoriales (logotipo y monograma CB, en navy y blanco), 22 variables de color, 9 estilos de texto Poppins |
 | 📐 Wireframes | Figma | 58 pantallas en 7 secciones + componentes; cada pantalla con su ruta de Expo Router y una nota de navegación; corregidas según la auditoría |
 | 🧭 Flujo de navegación | Figma | "Mapa de navegación con pantallas": Stack raíz, (auth), Drawer y Tabs por rol y rutas compartidas, con las 58 pantallas de alta fidelidad en miniatura (cada ruta con sus estados), 28 flechas y leyenda push / replace. Arriba sigue la versión anterior, solo con texto |
-| 🎨 Alta fidelidad | Figma | 14 componentes reutilizables (HF/…), 58 pantallas en 7 secciones, prototipo con 266 enlaces y 2 puntos de inicio (Paciente y Odontólogo) |
+| 🎨 Alta fidelidad | Figma | 14 componentes reutilizables (HF/…), 58 pantallas en 7 secciones, prototipo con 276 enlaces y 2 puntos de inicio (Paciente y Odontólogo) |
 
 **Cobertura del diseño**
 
@@ -69,7 +69,12 @@ Lo siguiente es cerrar el diseño con una revisión y la matriz del Hito 1, y lu
   - En A04 el enlace a P01 estaba en toda la barra superior; ahora lo tiene el botón «Crear cuenta».
   - Se enlazaron botones y tarjetas que no hacían nada: Resina y Endodoncia en S01, Cancelar y Reprogramar en M08, tarjetas de cita en P01, M01, O01 y O10, y «+ Nuevo servicio» en C01.
   - Se quitó un punto de inicio duplicado que había quedado en O12.
-- [ ] Decidir si se enlazan en el prototipo las pantallas de estado que hoy no se alcanzan tocando (ver Riesgos).
+- [x] Enlazar en el prototipo los estados del recorrido del paciente con toques simulados. Desde «Paciente — desde el inicio» se llega a 34 pantallas:
+  - A02 campo Contraseña → A03; A04 campo Correo → A05.
+  - S02 sábado 21 → S04; S03 franja 11:00 → S05.
+  - Resina o Endodoncia en S01 → S06 → S08. Lo controla la variable de prototipo `Prototipo/requiereAprobacion`; Valoración y Limpieza siguen terminando en S07.
+  - M01 buscador → M02; P03 recordatorio «mañana tienes cita» → M06.
+  - Mapa: entrar desde P01 (tab o «Ver en el mapa») pasa por MP03. «Ahora no» → MP04 → «Continuar sin ubicación» → MP05. En MP01, «Centrar en mí» → MP06 → «Reintentar» → MP07.
 - [ ] Revisión del equipo y del docente sobre wireframes y alta fidelidad.
 - [ ] Armar la matriz requisito → función → pantalla → archivo → evidencia; las rutas de cada pantalla ya están en los wireframes.
 - [ ] Confirmar con el cliente los datos que se supusieron: horario (L–V 8:00 a. m.–6:00 p. m., sábado 8:00 a. m.–12:00 m.), almuerzo, 24 h de anticipación, servicios con su duración y teléfono del consultorio.
@@ -97,6 +102,7 @@ Lo siguiente es cerrar el diseño con una revisión y la matriz del Hito 1, y lu
 - **Solapamientos (RF-06):** dos pacientes pueden pedir la misma franja a la vez. Bloquearlo solo en la app no basta; hace falta una restricción o función en Supabase.
 - **Recordatorios (RF-16 y RF-17):** requieren notificaciones programadas (por ejemplo, Expo Notifications). Falta decidir el mecanismo y probarlo en Android.
 - **Prototipo:** el registro con correo repetido (A05) no enlaza a sí mismo a propósito.
-- **Pantallas que no se alcanzan en el prototipo:** S08 (la ruta de aprobación termina siempre en S07), A03, A05, S04, S05, M02, M04, M06, MP03 a MP07, C03, O07 y G01 a G04. Son estados o errores que dependen de datos, así que hoy solo se muestran como pantallas sueltas. Para la demo se pueden enlazar con disparadores simulados.
+- **Prototipo (Present):** el recorrido que se muestra es el del paciente. M04 (cita no encontrada) y G01 a G03 (cargando, sin conexión, error) quedan como pantallas de referencia porque ningún toque las provoca. Del odontólogo, C03, O07 y G04 tampoco se alcanzan. Los toques simulados (por ejemplo, tocar el campo Correo para ver A05) solo sirven para la demo; en la app esos estados los produce el servicio.
+- **S06 con aprobación:** con Resina o Endodoncia, el resumen S06 sigue mostrando «Limpieza dental · Confirmación inmediata». En la app el botón debe decir «Enviar solicitud» (ver la nota de S06 en los wireframes).
 - **Archivos:** el PDF de requerimientos original es una imagen; solo la página 8 tiene texto seleccionable. El archivo de Figma en borradores ya no se usa: trabajar solo en el del team.
 - **Copias de los originales:** los documentos sin modificar siguen en Descargas.
