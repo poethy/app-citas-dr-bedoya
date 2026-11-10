@@ -25,7 +25,7 @@ El diseño del frontend está completo en Figma (wireframes, flujo de navegació
 
 ## Lo que está hecho
 
-Hay 4 páginas en Figma con 57 pantallas en gris y las mismas 57 a color, más 3 documentos actualizados.
+Hay 4 páginas en Figma con 58 pantallas en gris y las mismas 58 a color, más 3 documentos actualizados.
 
 | Entregable | Dónde | Qué contiene |
 | --- | --- | --- |
@@ -33,9 +33,9 @@ Hay 4 páginas en Figma con 57 pantallas en gris y las mismas 57 a color, más 3
 | requerimientos_funcionales_app_citasFinal (actualizado).pdf | Carpeta del Escritorio | Páginas 1–7 originales + página 8 con el RF-28 y 4 escenarios |
 | Datos_ejemplo_wireframes.md | Carpeta del Escritorio | Fechas, agenda, servicios y la fórmula única de franjas que usan todas las pantallas |
 | 🧱 Fundamentos | Figma | 4 logos vectoriales (logotipo y monograma CB, en navy y blanco), 22 variables de color, 9 estilos de texto Poppins |
-| 📐 Wireframes | Figma | 57 pantallas en 7 secciones + componentes; cada pantalla con su ruta de Expo Router y una nota de navegación; corregidas según la auditoría |
-| 🧭 Flujo de navegación | Figma | Diagrama con Stack raíz, (auth), Drawer y Tabs por rol, rutas compartidas, 32 pantallas y leyenda push / replace |
-| 🎨 Alta fidelidad | Figma | 14 componentes reutilizables (HF/…), 57 pantallas en 7 secciones, prototipo con 261 enlaces y 2 puntos de inicio (Paciente y Odontólogo) |
+| 📐 Wireframes | Figma | 58 pantallas en 7 secciones + componentes; cada pantalla con su ruta de Expo Router y una nota de navegación; corregidas según la auditoría |
+| 🧭 Flujo de navegación | Figma | "Mapa de navegación con pantallas": Stack raíz, (auth), Drawer y Tabs por rol y rutas compartidas, con las 58 pantallas de alta fidelidad en miniatura (cada ruta con sus estados), 28 flechas y leyenda push / replace. Arriba sigue la versión anterior, solo con texto |
+| 🎨 Alta fidelidad | Figma | 14 componentes reutilizables (HF/…), 58 pantallas en 7 secciones, prototipo con 271 enlaces y 2 puntos de inicio (Paciente y Odontólogo) |
 
 **Cobertura del diseño**
 
@@ -55,6 +55,7 @@ Estas decisiones ya están aplicadas en los documentos y en Figma; cambiarlas ob
 - **Rutas compartidas:** `cita/[id]` (una sola ruta que muestra la vista según el rol), `cita/[id]/reprogramar`, `solicitud/[id]` y `consultorio`.
 - **Fin del Stack de agendar:** el resultado se abre con replace y reinicia el Stack, para que Atrás no vuelva al resumen.
 - **Alcance:** la información del consultorio es de solo lectura (editarla no está en el alcance). Los resultados de aprobar, registrar, reprogramar o bloquear se muestran con un aviso breve, no con pantallas extra.
+- **Cerrar sesión con confirmación en los dos roles:** el paciente confirma en P06 y el odontólogo en O12 (modal sobre la Agenda, abierto desde el Drawer O03). Confirmar hace replace a Bienvenida (A01) y Cancelar cierra el modal.
 - **Identidad visual:** paleta azul navy, Poppins y los dos logos del cliente (el monograma CB usa Libre Baskerville).
 
 ## Lo que falta por hacer
@@ -90,6 +91,6 @@ Lo siguiente es cerrar el diseño con una revisión y la matriz del Hito 1, y lu
 - **Datos supuestos:** el horario, el almuerzo, la anticipación, los servicios y los teléfonos de los pacientes son de ejemplo. Si el cliente da otros, hay que actualizar Datos_ejemplo_wireframes.md y las pantallas.
 - **Solapamientos (RF-06):** dos pacientes pueden pedir la misma franja a la vez. Bloquearlo solo en la app no basta; hace falta una restricción o función en Supabase.
 - **Recordatorios (RF-16 y RF-17):** requieren notificaciones programadas (por ejemplo, Expo Notifications). Falta decidir el mecanismo y probarlo en Android.
-- **Prototipo:** el registro con correo repetido (A05) no enlaza a sí mismo a propósito. Cerrar sesión desde el Drawer del odontólogo va directo a Bienvenida, sin modal de confirmación.
+- **Prototipo:** el registro con correo repetido (A05) no enlaza a sí mismo a propósito.
 - **Archivos:** el PDF de requerimientos original es una imagen; solo la página 8 tiene texto seleccionable. El archivo de Figma en borradores ya no se usa: trabajar solo en el del team.
 - **Copias de los originales:** los documentos sin modificar siguen en Descargas.
