@@ -34,3 +34,7 @@ yarn-error.*
 Thumbs.db
 ~$*
 *.tsbuildinfo
+
+# Instaladores y binarios ajenos al proyecto
+*.exe
+*.msi
