@@ -20,5 +20,7 @@ React Native + TypeScript + Expo (SDK 58), NativeWind, Expo Router, Supabase (Au
 | [docs/Handoff_App_Citas.md](docs/Handoff_App_Citas.md) | Estado del proyecto, decisiones y pendientes |
 | [docs/CLIENTE Y PROBLEMA (actualizado).docx](docs/) | Cliente, problema y alcance |
 | [docs/requerimientos_funcionales_app_citasFinal (actualizado).pdf](docs/) | Requerimientos RF-01 a RF-28 con criterios de aceptación |
+| [docs/Proyecto_Final_Movil_II.docx](docs/) | Requisitos académicos del proyecto |
+| [docs/Datos_ejemplo_wireframes.md](docs/Datos_ejemplo_wireframes.md) | Datos de ejemplo y fórmula de franjas que usan las pantallas |
 
 Diseño en Figma: [App Citas Dr. Camilo Bedoya (Final)](https://www.figma.com/design/nyTAxFuw0CJ5hxoIqvsAIk)
