@@ -1,4 +1,4 @@
-# App Citas — Dr. Camilo Bedoya
+# Aplicación Citas Dr. Camilo Bedoya
 
 App móvil para agendar citas en el consultorio odontológico del Dr. Camilo Bedoya Orozco (Pereira). Reemplaza la agenda de papel y las citas por WhatsApp, y evita citas cruzadas en la misma franja.
 
