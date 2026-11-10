@@ -2,7 +2,7 @@
 
 Versión 1.1 · 10 de noviembre de 2026 · Estado: **propuesta para revisar con el equipo**
 
-Este documento define cómo se va a construir la app: stack, base de datos, reglas de negocio en el servidor, API, estructura del código y entorno. Sale de los requerimientos (RF-01 a RF-28), de los requisitos académicos de Móvil II y del diseño en Figma.
+Este documento define cómo se va a construir la app: stack, base de datos, reglas de negocio en el servidor, API, estructura del código y entorno. Sale de los requerimientos (RF-01 a RF-29), de los requisitos académicos de Móvil II y del diseño en Figma.
 
 Las decisiones que dependen de los huecos de los requerimientos están marcadas con **⚠ Por confirmar**. Cada una tiene una opción propuesta para no frenar el desarrollo, y la sección 11 las reúne todas.
 
@@ -233,7 +233,7 @@ Todas son `security definer`, comprueban el rol al inicio y devuelven errores co
 | Función | Quién | Qué hace |
 | --- | --- | --- |
 | `disponibilidad_dia(fecha date)` | Ambos | Devuelve el horario del día y los rangos ocupados (citas activas, bloqueos puntuales y recurrentes). Es la entrada del cálculo de franjas en la app |
-| `solicitar_cita(servicio_id, inicio)` | Paciente | Calcula `fin` con la duración del servicio. Valida que la cita caiga dentro del horario, que no choque con bloqueos y que respete `anticipacion_agendar_horas` (si no, `FUERA_DE_ANTICIPACION`). El estado queda `confirmada` o `pendiente` según el servicio (RF-08, RF-09). Si la franja ya no está libre, la restricción de exclusión hace fallar la inserción con `HORARIO_NO_DISPONIBLE` (RF-06) |
+| `solicitar_cita(servicio_id, inicio)` | Paciente | Calcula `fin` con la duración del servicio. Valida que la cita caiga dentro del horario, que no choque con bloqueos y que respete `anticipacion_agendar_horas` (RF-29; si no, `FUERA_DE_ANTICIPACION`). El estado queda `confirmada` o `pendiente` según el servicio (RF-08, RF-09). Si la franja ya no está libre, la restricción de exclusión hace fallar la inserción con `HORARIO_NO_DISPONIBLE` (RF-06) |
 | `cancelar_cita(cita_id)` | Paciente (sus citas) / Odontólogo | Para el paciente, exige que falten al menos `anticipacion_cambios_horas` (RF-12). Si no, devuelve `FUERA_DE_PLAZO` (M06). Deja la cita en `cancelada`, lo que libera la franja, y avisa al odontólogo (RF-13) |
 | `reprogramar_cita(cita_id, nuevo_inicio)` | Paciente / Odontólogo (⚠ D6) | Mismas validaciones que solicitar. Mueve `inicio` y `fin` y vuelve a aplicar la regla de confirmación del servicio (RF-14) |
 | `responder_solicitud(cita_id, aprobar boolean)` | Odontólogo | Pasa la cita de `pendiente` a `confirmada` o `rechazada` y avisa al paciente (RF-09, RF-11) |
