@@ -34,7 +34,7 @@ Hay 4 páginas en Figma con 58 pantallas en gris y las mismas 58 a color, más 3
 | Datos_ejemplo_wireframes.md | Carpeta del Escritorio | Fechas, agenda, servicios y la fórmula única de franjas que usan todas las pantallas |
 | 🧱 Fundamentos | Figma | 4 logos vectoriales (logotipo y monograma CB, en navy y blanco), 22 variables de color, 9 estilos de texto Poppins |
 | 📐 Wireframes | Figma | 58 pantallas en 7 secciones + componentes; cada pantalla con su ruta de Expo Router y una nota de navegación; corregidas según la auditoría |
-| 🧭 Flujo de navegación | Figma | "Mapa de navegación con pantallas": Stack raíz, (auth), Drawer y Tabs por rol y rutas compartidas, con las 58 pantallas de alta fidelidad en miniatura (cada ruta con sus estados), 28 flechas y leyenda push / replace. Arriba sigue la versión anterior, solo con texto |
+| 🧭 Flujo de navegación | Figma | **"Flujo de usuario por rol"** (principal): una columna por rol con su color (paciente en azul navy, odontólogo en verde) y una fila por flujo que se lee de izquierda a derecha, con las ramas abajo, notas amarillas de condición y etiquetas de salto en vez de líneas largas. Incluye las 58 pantallas. A la derecha quedan como referencia las dos versiones anteriores: "Mapa de navegación con pantallas": Stack raíz, (auth), Drawer y Tabs por rol y rutas compartidas, con las 58 pantallas de alta fidelidad en miniatura (cada ruta con sus estados), 28 flechas y leyenda push / replace. Arriba sigue la versión anterior, solo con texto |
 | 🎨 Alta fidelidad | Figma | 14 componentes reutilizables (HF/…), 58 pantallas en 7 secciones, prototipo con 276 enlaces y 2 puntos de inicio (Paciente y Odontólogo) |
 
 **Cobertura del diseño**
@@ -55,6 +55,9 @@ Estas decisiones ya están aplicadas en los documentos y en Figma; cambiarlas ob
 - **Rutas compartidas:** `cita/[id]` (una sola ruta que muestra la vista según el rol), `cita/[id]/reprogramar`, `solicitud/[id]` y `consultorio`.
 - **Fin del Stack de agendar:** el resultado se abre con replace y reinicia el Stack, para que Atrás no vuelva al resumen.
 - **Alcance:** la información del consultorio es de solo lectura (editarla no está en el alcance). Los resultados de aprobar, registrar, reprogramar o bloquear se muestran con un aviso breve, no con pantallas extra.
+- **Precio por servicio:** cada servicio tiene un precio fijo en COP. Se muestra en S01, S06 (resumen), C01 y C02 (campo editable). Los valores son de ejemplo y el pago se hace en el consultorio.
+- **Dos anticipaciones:** C04 tiene un contador «para agendar» y otro «para cancelar o reprogramar», ambos en 24 h por defecto.
+- **Ajustes por feedback del equipo (10 de noviembre):** se quitó el cuadro «7 franjas libres» de S03 (y el de S05) y la tarjeta «Recordatorio» de P03. Ahora el aviso de recordatorio de P01 lleva a M06.
 - **Cerrar sesión con confirmación en los dos roles:** el paciente confirma en P06 y el odontólogo en O12 (modal sobre la Agenda, abierto desde el Drawer O03). Confirmar hace replace a Bienvenida (A01) y Cancelar cierra el modal.
 - **Identidad visual:** paleta azul navy, Poppins y los dos logos del cliente (el monograma CB usa Libre Baskerville).
 
@@ -73,9 +76,10 @@ Lo siguiente es cerrar el diseño con una revisión y la matriz del Hito 1, y lu
   - A02 campo Contraseña → A03; A04 campo Correo → A05.
   - S02 sábado 21 → S04; S03 franja 11:00 → S05.
   - Resina o Endodoncia en S01 → S06 → S08. Lo controla la variable de prototipo `Prototipo/requiereAprobacion`; Valoración y Limpieza siguen terminando en S07.
-  - M01 buscador → M02; P03 recordatorio «mañana tienes cita» → M06.
+  - M01 buscador → M02; aviso «Recordatorio: tu cita es mañana» en P01 → M06.
   - Mapa: entrar desde P01 (tab o «Ver en el mapa») pasa por MP03. «Ahora no» → MP04 → «Continuar sin ubicación» → MP05. En MP01, «Centrar en mí» → MP06 → «Reintentar» → MP07.
-- [ ] Revisión del equipo y del docente sobre wireframes y alta fidelidad.
+- [ ] Revisión del equipo y del docente sobre wireframes y alta fidelidad. Ya se aplicó el primer feedback del equipo: precios, dos anticipaciones, S03, P03 y flujo por rol.
+- [x] Especificación técnica y base de datos: [especificaciones-tecnicas.md](especificaciones-tecnicas.md) (Supabase). Quedan decisiones abiertas en su sección 11.
 - [ ] Armar la matriz requisito → función → pantalla → archivo → evidencia; las rutas de cada pantalla ya están en los wireframes.
 - [ ] Confirmar con el cliente los datos que se supusieron: horario (L–V 8:00 a. m.–6:00 p. m., sábado 8:00 a. m.–12:00 m.), almuerzo, 24 h de anticipación, servicios con su duración y teléfono del consultorio.
 - [ ] Obtener las coordenadas exactas del consultorio para el marcador del mapa.
