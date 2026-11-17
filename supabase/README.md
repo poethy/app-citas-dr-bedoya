@@ -2,41 +2,42 @@
 
 PostgreSQL de Supabase con las tablas, reglas y seguridad de la app. El diseño está en [docs/especificaciones-tecnicas.md](../docs/especificaciones-tecnicas.md), secciones 3 y 4, y lo que usa cada pantalla del Figma en [docs/pantallas-y-datos.md](../docs/pantallas-y-datos.md).
 
+## Proyecto en Supabase
+
+| Dato | Valor |
+| --- | --- |
+| Proyecto | `app-citas-dr-bedoya` (organización de poethy, plan gratuito) |
+| Región | us-east-1 (Virginia) |
+| URL | `https://hiechbnorpgzrwfgufjp.supabase.co` |
+| Clave para la app | La **publishable** (`sb_publishable_…`), en Project Settings → API. Va en el `.env` (ver [.env.template](../.env.template)); se comparte con el equipo por un canal privado |
+
+Creado el 17 de noviembre de 2026 con las 5 migraciones y el seed de esta carpeta. Se probó en el proyecto real: registro con vinculación de ficha, agendar, choque de horario, aprobación pendiente, cancelación y permisos. El asesor de seguridad de Supabase solo marca las 9 funciones RPC que la app debe poder llamar (validan el rol por dentro).
+
+**Pendiente (requiere el panel de Supabase):**
+1. **Authentication → Sign In / Providers → Email**: desactivar **Confirm email** mientras se desarrolla, para que el registro (RF-01) entre directo.
+2. Crear la cuenta del odontólogo en **Authentication → Users → Add user** (con «Auto Confirm User») y ejecutar [crear_odontologo.sql](crear_odontologo.sql) en el **SQL Editor** con su correo.
+3. Cuando el cliente los confirme: teléfono y coordenadas del consultorio (`update public.configuracion set telefono = …, latitud = …, longitud = … where id = 1;`).
+
 ## Archivos
 
 | Archivo | Qué hace |
 | --- | --- |
-| `migrations/…0100_esquema.sql` | Tablas, tipos y la restricción que impide citas cruzadas (RF-06) |
-| `migrations/…0200_reglas.sql` | Validación de franjas, avisos automáticos, registro de pacientes y funciones RPC (solicitar, cancelar, reprogramar, aprobar, registrar, bloquear, disponibilidad) |
-| `migrations/…0300_seguridad.sql` | Seguridad por rol con RLS (RF-03) y permisos de las funciones |
-| `migrations/…0400_recordatorios_cron.sql` | Recordatorios cada 15 min y resumen diario a las 8:00 a. m. con pg_cron (RF-16, RF-17) |
+| `migrations/…_esquema.sql` | Tablas, tipos y la restricción que impide citas cruzadas (RF-06) |
+| `migrations/…_reglas.sql` | Validación de franjas, avisos automáticos, registro de pacientes y funciones RPC (solicitar, cancelar, reprogramar, aprobar, registrar, bloquear, disponibilidad) |
+| `migrations/…_seguridad.sql` | Seguridad por rol con RLS (RF-03) y permisos de las funciones |
+| `migrations/…_recordatorios_cron.sql` | Recordatorios cada 15 min y resumen diario a las 8:00 a. m. con pg_cron (RF-16, RF-17) |
+| `migrations/…_ajustes_seguridad.sql` | Ajustes que pidió el asesor de seguridad de Supabase |
 | `seed.sql` | Datos de ejemplo: horario, almuerzo, 4 servicios con precio, 5 fichas de pacientes y la agenda del jueves 19 de noviembre de 2026 |
 | `crear_odontologo.sql` | Convierte una cuenta en la del odontólogo (una sola vez) |
 | `config.toml` | Configuración de la CLI de Supabase |
 
-## Crear la base en Supabase (una sola vez, la hace una persona del equipo)
+Los nombres de las migraciones coinciden con las versiones registradas en el proyecto, así que la CLI (`npx supabase link` + `npx supabase db push`) solo aplicará las que se agreguen después.
 
-1. Crear el proyecto en [supabase.com/dashboard](https://supabase.com/dashboard): **New project**, región **East US (North Virginia)** o la más cercana, y una contraseña de base de datos que se guarda en un gestor de contraseñas.
-2. Desde la raíz del repo:
+## Cambiar la base
 
-   ```bash
-   npx supabase login
-   ```
-
-   ```bash
-   npx supabase link --project-ref <ref-del-proyecto>
-   ```
-
-   ```bash
-   npx supabase db push --include-seed
-   ```
-
-   El `ref` es la parte de la URL del proyecto: `https://<ref>.supabase.co`. `link` y `db push` piden la contraseña de la base.
-3. **Authentication → Sign In / Providers → Email**: desactivar **Confirm email** mientras se desarrolla, para que el registro (RF-01) entre directo.
-4. Crear la cuenta del odontólogo y ejecutar [crear_odontologo.sql](crear_odontologo.sql) en el **SQL Editor** (las instrucciones están dentro del archivo).
-5. **Project Settings → API**: copiar la **Project URL** y la clave **publishable** (o `anon`) al `.env` de la app. Se comparten con el equipo por un canal privado, nunca en el repo.
-
-**Sin la CLI:** en el SQL Editor se pueden pegar y ejecutar, en orden, los cuatro archivos de `migrations/` y después `seed.sql`.
+1. Crear un archivo nuevo en `migrations/` (nunca editar uno ya aplicado).
+2. Correr las pruebas locales.
+3. Aplicarlo con `npx supabase db push` (pide la contraseña de la base) o desde el SQL Editor.
 
 ## Probar las reglas sin Supabase
 
