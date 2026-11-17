@@ -1,6 +1,11 @@
 import { describe, expect, it } from 'vitest';
 import { crearDatosIniciales } from '../src/services/mock/seed';
-import { calcularFranjas, cruza } from '../src/utils/franjas';
+import {
+  calcularFranjas,
+  cruza,
+  obtenerFinalesDeBloqueo,
+  seleccionarTramoDeBloqueo,
+} from '../src/utils/franjas';
 import {
   registrarCita,
   validarCambio,
@@ -20,6 +25,37 @@ function base() {
   return db;
 }
 describe('Disponibilidad por tramos', () => {
+  it('permite bloquear más de tres horas y corta la selección en el primer cruce', () => {
+    const db = base();
+    const aHora = (minutos: number) => instante(fecha, minutos).toISOString();
+    db.bloqueos.push({ id: '1', inicio: aHora(630), fin: aHora(675), motivo: 'Ausencia' });
+    const { franjas } = calcularFranjas(db, fecha, 15, 'odontologo', ahora);
+
+    expect(obtenerFinalesDeBloqueo(franjas, aHora(480)).at(-1)).toBe(aHora(630));
+    expect(obtenerFinalesDeBloqueo(franjas, aHora(630))).toEqual([]);
+    expect(obtenerFinalesDeBloqueo(franjas, aHora(675)).at(-1)).toBe(aHora(750));
+    expect(obtenerFinalesDeBloqueo(franjas, aHora(810)).at(-1)).toBe(aHora(1080));
+  });
+  it('ajusta el arrastre en ambas direcciones sin atravesar franjas ocupadas', () => {
+    const db = base();
+    const aHora = (minutos: number) => instante(fecha, minutos).toISOString();
+    db.bloqueos.push({ id: '1', inicio: aHora(600), fin: aHora(660), motivo: 'Ausencia' });
+    const { franjas } = calcularFranjas(db, fecha, 15, 'odontologo', ahora);
+
+    expect(seleccionarTramoDeBloqueo(franjas, aHora(540), aHora(585))).toEqual({
+      inicio: aHora(540),
+      fin: aHora(585),
+    });
+    expect(seleccionarTramoDeBloqueo(franjas, aHora(540), aHora(690))).toEqual({
+      inicio: aHora(540),
+      fin: aHora(600),
+    });
+    expect(seleccionarTramoDeBloqueo(franjas, aHora(690), aHora(540))).toEqual({
+      inicio: aHora(660),
+      fin: aHora(690),
+    });
+    expect(seleccionarTramoDeBloqueo(franjas, aHora(615), aHora(690))).toBeNull();
+  });
   it('no suma dos huecos de 30 minutos para una cita de 45', () => {
     const db = base();
     db.bloqueos = [

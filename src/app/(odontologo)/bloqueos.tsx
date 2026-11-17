@@ -1,120 +1,237 @@
-import { useState } from 'react';
-import { Pressable, View } from 'react-native';
+import { useCallback, useState } from 'react';
+import { BackHandler, Platform } from 'react-native';
+import { useFocusEffect } from 'expo-router';
 import { useAccion, useDatos } from '@/hooks/useDatos';
-import { Boton, Campo, ErrorAviso, Pantalla, Tarjeta, Texto } from '@/components/ui';
+import { useAhora } from '@/hooks/useAhora';
+import {
+  Boton,
+  Campo,
+  ErrorAviso,
+  Estado,
+  Opciones,
+  Pantalla,
+  Tarjeta,
+  Texto,
+} from '@/components/ui';
 import Calendario from '@/components/Calendario';
+import Franjas from '@/components/Franjas';
+import LineaTiempoBloqueo, { duracionBloqueo } from '@/components/LineaTiempoBloqueo';
+import type { Franja } from '@/models';
 import { fechaLocal, fechaTexto, horaTexto } from '@/utils/fechas';
+import { calcularFranjas, horarioDia, obtenerFinalesDeBloqueo } from '@/utils/franjas';
 import { repositorio } from '@/services/mock/repositorio';
-import { cruza, ocupacion, horarioDia } from '@/utils/franjas';
+
+type Paso = 'fecha' | 'horario' | 'motivo';
+
 export default function Bloqueos() {
-  const { data } = useDatos();
-  const [fecha, setFecha] = useState(fechaLocal()),
-    [inicio, setInicio] = useState(''),
-    [duracion, setDuracion] = useState('45'),
-    [motivo, setMotivo] = useState('Ausencia');
+  const consulta = useDatos();
+  const { data } = consulta;
+  const ahora = new Date(useAhora());
+  const [paso, setPaso] = useState<Paso>('fecha');
+  const [fecha, setFecha] = useState(fechaLocal);
+  const [inicio, setInicio] = useState('');
+  const [fin, setFin] = useState('');
+  const [motivo, setMotivo] = useState('');
+  const [usarBotones, setUsarBotones] = useState(false);
   const crear = useAccion(repositorio.bloquear, 'Horario bloqueado.');
   const eliminar = useAccion(repositorio.eliminarBloqueo, 'Bloqueo eliminado.');
-  const horario = horarioDia(fecha);
-  const fin =
-    inicio && /^\d+$/.test(duracion) && Number(duracion) > 0
-      ? new Date(Date.parse(inicio) + Number(duracion) * 60000).toISOString()
-      : '';
-  const choque = !!(
-    data &&
-    inicio &&
-    fin &&
-    ocupacion(data, fecha).some((r) => cruza(r, { inicio, fin }))
+  const seleccionar = useCallback((rango: Franja) => {
+    setInicio(rango.inicio);
+    setFin(rango.fin);
+  }, []);
+
+  const volver = useCallback(() => {
+    if (paso === 'fecha') return false;
+    if (!crear.isPending) setPaso(paso === 'motivo' ? 'horario' : 'fecha');
+    return true;
+  }, [paso, crear.isPending]);
+
+  useFocusEffect(
+    useCallback(() => {
+      if (Platform.OS !== 'android' || paso === 'fecha') return;
+      const suscripcion = BackHandler.addEventListener('hardwareBackPress', volver);
+      return () => suscripcion.remove();
+    }, [paso, volver]),
   );
-  const slots = horario
-    ? Array.from(
-        { length: (Date.parse(horario.fin) - Date.parse(horario.inicio)) / (15 * 60000) },
-        (_, i) => new Date(Date.parse(horario.inicio) + i * 15 * 60000).toISOString(),
-      )
-    : [];
+
+  if (!data) {
+    return (
+      <Pantalla titulo="Bloquear disponibilidad">
+        {consulta.isError ? (
+          <Estado titulo="No pudimos cargar los horarios" accion={() => consulta.refetch()} />
+        ) : (
+          <Estado titulo="Cargando horarios" cargando />
+        )}
+      </Pantalla>
+    );
+  }
+
+  const franjas = calcularFranjas(data, fecha, 15, 'odontologo', ahora).franjas;
+  const horario = horarioDia(fecha);
+  const finales = obtenerFinalesDeBloqueo(franjas, inicio);
+  const horarioValido = finales.includes(fin);
+  const seleccion = horarioValido ? { inicio, fin } : null;
+  const duracion = seleccion ? duracionBloqueo(seleccion) : '';
+
+  function elegirFecha(dia: string) {
+    if (dia !== fecha) {
+      setInicio('');
+      setFin('');
+      setMotivo('');
+    }
+    setFecha(dia);
+    setPaso('horario');
+  }
+
+  async function guardarBloqueo() {
+    if (!horarioValido || !motivo.trim()) return;
+    try {
+      await crear.mutateAsync({ inicio, fin, motivo: motivo.trim() });
+      setInicio('');
+      setFin('');
+      setMotivo('');
+      setPaso('horario');
+    } catch {
+      // El aviso muestra el error y permite corregir el intervalo o reintentar.
+    }
+  }
+
   return (
     <Pantalla
+      key={paso}
       titulo="Bloquear disponibilidad"
+      subtitulo={paso === 'fecha' ? undefined : fechaTexto(fecha)}
+      onVolver={paso === 'fecha' ? undefined : volver}
       footer={
-        <>
-          <ErrorAviso error={crear.error || eliminar.error} />
-          {choque ? (
-            <ErrorAviso
-              error={new Error('El intervalo coincide con una cita o bloqueo. Elige otro espacio.')}
-            />
-          ) : null}
+        paso === 'horario' ? (
+          <>
+            {duracion && <Texto className="font-medium">Duración del bloqueo: {duracion}</Texto>}
+            <Boton disabled={!horarioValido} onPress={() => setPaso('motivo')}>
+              Continuar
+            </Boton>
+          </>
+        ) : paso === 'motivo' ? (
           <Boton
-            disabled={!inicio || !fin || choque}
+            disabled={!horarioValido || !motivo.trim()}
             cargando={crear.isPending}
-            onPress={async () => {
-              try {
-                await crear.mutateAsync({ inicio, fin, motivo: motivo.trim() || 'Ausencia' });
-                setInicio('');
-              } catch {}
-            }}
+            onPress={guardarBloqueo}
           >
             Bloquear horario
           </Boton>
-        </>
+        ) : undefined
       }
     >
-      <Calendario
-        valor={fecha}
-        onChange={(v) => {
-          setFecha(v);
-          setInicio('');
-        }}
-      />
-      <Texto className="text-xs font-medium">{fechaTexto(fecha)} · selecciona el inicio</Texto>
-      <View className="flex-row flex-wrap gap-2">
-        {slots.map((s) => (
-          <Pressable
-            key={s}
-            onPress={() => setInicio(s)}
-            accessibilityRole="button"
-            accessibilityState={{ selected: s === inicio }}
-            className={`min-w-[30%] flex-grow py-3 px-1 border rounded-xl ${s === inicio ? 'bg-navy-900 border-navy-900' : 'bg-white border-line'}`}
-          >
-            <Texto className={`text-xs text-center ${s === inicio ? 'text-white' : ''}`}>
-              {horaTexto(s)}
-            </Texto>
-          </Pressable>
-        ))}
-      </View>
-      <Campo
-        label="Duración del bloqueo (minutos)"
-        value={duracion}
-        onChangeText={setDuracion}
-        keyboardType="number-pad"
-      />
-      <Campo label="Motivo" value={motivo} onChangeText={setMotivo} />
-      {data?.citas
-        .filter(
-          (c) => fechaLocal(c.inicio) === fecha && ['confirmada', 'pendiente'].includes(c.estado),
-        )
-        .map((c) => (
-          <Tarjeta key={c.id}>
-            <Texto className="font-medium">
-              {c.pacienteNombre} · {horaTexto(c.inicio)}
-            </Texto>
-            <Texto className="text-xs text-muted">{c.servicioNombre} · ocupado</Texto>
-          </Tarjeta>
-        ))}
-      {data?.bloqueos
-        .filter((b) => fechaLocal(b.inicio) === fecha)
-        .map((b) => (
-          <Tarjeta key={b.id}>
-            <Texto>
-              {b.motivo} · {horaTexto(b.inicio)} – {horaTexto(b.fin)}
-            </Texto>
-            <Boton
-              variant="danger"
-              cargando={eliminar.isPending}
-              onPress={() => eliminar.mutate(b.id)}
-            >
-              Eliminar bloqueo
+      {paso === 'fecha' && (
+        <>
+          <Texto className="font-medium">Elige la fecha del bloqueo</Texto>
+          <Calendario valor={fecha} onChange={elegirFecha} />
+        </>
+      )}
+
+      {paso === 'horario' && (
+        <>
+          {franjas.length > 0 && (
+            <Boton variant="text" onPress={() => setUsarBotones(!usarBotones)}>
+              {usarBotones ? 'Volver a la cuadrícula' : 'Seleccionar horas con botones'}
             </Boton>
+          )}
+          {horario && !usarBotones && (
+            <LineaTiempoBloqueo
+              horario={horario}
+              franjas={franjas}
+              seleccion={seleccion}
+              onSeleccionar={seleccionar}
+            />
+          )}
+          {franjas.length === 0 && (
+            <Estado
+              titulo="No hay horarios libres"
+              detalle="Vuelve al calendario y elige otra fecha."
+            />
+          )}
+          {usarBotones && franjas.length > 0 && (
+            <>
+              <Texto className="font-medium">Selecciona la hora de inicio</Texto>
+              <Franjas
+                franjas={franjas}
+                valor={inicio}
+                onChange={(hora) => {
+                  if (hora === inicio) return;
+                  setInicio(hora);
+                  setFin('');
+                }}
+              />
+              {finales.length > 0 && (
+                <>
+                  <Texto className="font-medium">Selecciona la hora de fin</Texto>
+                  <Opciones
+                    opciones={finales.map((hora) => ({ valor: hora, label: horaTexto(hora) }))}
+                    valor={fin}
+                    onChange={setFin}
+                  />
+                </>
+              )}
+            </>
+          )}
+          <ErrorAviso error={eliminar.error} />
+          {data.citas
+            .filter(
+              (cita) =>
+                fechaLocal(cita.inicio) === fecha &&
+                (cita.estado === 'confirmada' ||
+                  (cita.estado === 'pendiente' && Date.parse(cita.inicio) > ahora.getTime())),
+            )
+            .map((cita) => (
+              <Tarjeta key={cita.id}>
+                <Texto className="font-medium">
+                  {cita.pacienteNombre} · {horaTexto(cita.inicio)} – {horaTexto(cita.fin)}
+                </Texto>
+                <Texto className="text-xs text-muted">{cita.servicioNombre} · Ocupado</Texto>
+              </Tarjeta>
+            ))}
+          {data.bloqueos
+            .filter((bloqueo) => fechaLocal(bloqueo.inicio) === fecha)
+            .map((bloqueo) => (
+              <Tarjeta key={bloqueo.id}>
+                <Texto>
+                  {bloqueo.motivo} · {horaTexto(bloqueo.inicio)} – {horaTexto(bloqueo.fin)}
+                </Texto>
+                <Boton
+                  variant="danger"
+                  cargando={eliminar.isPending}
+                  onPress={() => eliminar.mutate(bloqueo.id)}
+                >
+                  Eliminar bloqueo
+                </Boton>
+              </Tarjeta>
+            ))}
+        </>
+      )}
+
+      {paso === 'motivo' && (
+        <>
+          <Tarjeta>
+            <Texto className="font-medium">
+              {horaTexto(inicio)} – {horaTexto(fin)}
+            </Texto>
+            {duracion && <Texto>Duración del bloqueo: {duracion}</Texto>}
           </Tarjeta>
-        ))}
+          <Campo
+            label="Motivo de la ausencia"
+            placeholder="Escribe el motivo"
+            value={motivo}
+            onChangeText={setMotivo}
+            editable={!crear.isPending}
+            multiline
+          />
+          {!horarioValido && (
+            <Texto accessibilityRole="alert" className="text-danger">
+              El horario ya no está disponible. Vuelve y selecciona otro intervalo.
+            </Texto>
+          )}
+          <ErrorAviso error={crear.error} />
+        </>
+      )}
     </Pantalla>
   );
 }

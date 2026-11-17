@@ -167,6 +167,7 @@ export function Pantalla({
   footer,
   headerRight,
   subtitulo,
+  onVolver,
 }: PropsWithChildren<{
   titulo?: string;
   menu?: boolean;
@@ -176,6 +177,7 @@ export function Pantalla({
   footer?: ReactNode;
   headerRight?: ReactNode;
   subtitulo?: string;
+  onVolver?: () => void;
 }>) {
   const navigation = useNavigation();
   const content = <View className="flex-grow gap-4 p-4">{children}</View>;
@@ -191,12 +193,14 @@ export function Pantalla({
           <Pressable
             accessibilityRole="button"
             accessibilityLabel={menu ? 'Abrir menú' : 'Volver'}
-            onPress={() =>
-              menu
-                ? navigation.dispatch(DrawerActions.openDrawer())
-                : router.canGoBack()
-                  ? router.back()
-                  : router.replace('/')
+            onPress={
+              onVolver ??
+              (() =>
+                menu
+                  ? navigation.dispatch(DrawerActions.openDrawer())
+                  : router.canGoBack()
+                    ? router.back()
+                    : router.replace('/'))
             }
             className={`p-3 rounded-full ${oscura ? 'bg-navy-700' : 'bg-white'}`}
           >

@@ -1,5 +1,6 @@
 import { useState } from 'react';
 import { Pressable, View } from 'react-native';
+import { SafeAreaView } from 'react-native-safe-area-context';
 import { Redirect, router, type Href } from 'expo-router';
 import {
   Drawer,
@@ -48,14 +49,19 @@ function ContenidoMenu({ rol, ...props }: DrawerContentComponentProps & { rol: R
   }
   return (
     <>
-      <DrawerContentScrollView {...props} contentContainerStyle={{ flex: 1, paddingTop: 0 }}>
-        <View className="bg-navy-900 p-5 gap-3">
-          <Logo blanco />
-          <Texto className="text-white font-medium">{perfil?.nombre}</Texto>
-          <Texto className="text-navy-300 text-xs">
-            {rol === 'paciente' ? 'Paciente' : 'Odontólogo · Consultorio 201'}
-          </Texto>
-        </View>
+      <DrawerContentScrollView
+        {...props}
+        contentContainerStyle={{ flexGrow: 1, paddingTop: 0, paddingStart: 0, paddingEnd: 0 }}
+      >
+        <SafeAreaView edges={['top', 'left', 'right']} className="bg-navy-900">
+          <View className="p-5 gap-3">
+            <Logo blanco />
+            <Texto className="text-white font-medium">{perfil?.nombre}</Texto>
+            <Texto className="text-navy-300 text-xs">
+              {rol === 'paciente' ? 'Paciente' : 'Odontólogo · Consultorio 201'}
+            </Texto>
+          </View>
+        </SafeAreaView>
         <View className="p-3 gap-1">
           {items.map((item) => (
             <Pressable

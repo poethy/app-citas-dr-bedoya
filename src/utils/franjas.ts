@@ -2,6 +2,42 @@ import type { BaseDatos, Franja, Rol } from '@/models';
 import { HORA, MINUTO, instante, fechaLocal } from './fechas';
 export const cruza = (a: Franja, b: Franja): boolean =>
   Date.parse(a.inicio) < Date.parse(b.fin) && Date.parse(b.inicio) < Date.parse(a.fin);
+
+export function obtenerFinalesDeBloqueo(franjas: Franja[], inicio: string): string[] {
+  const indice = franjas.findIndex((franja) => franja.inicio === inicio);
+  if (indice < 0) return [];
+
+  const finales: string[] = [];
+  let siguienteInicio = inicio;
+  for (const franja of franjas.slice(indice)) {
+    if (franja.inicio !== siguienteInicio) break;
+    finales.push(franja.fin);
+    siguienteInicio = franja.fin;
+  }
+  return finales;
+}
+
+export function seleccionarTramoDeBloqueo(
+  franjas: Franja[],
+  ancla: string,
+  destino: string,
+): Franja | null {
+  const primera = franjas.find((franja) => franja.inicio === ancla);
+  if (!primera) return null;
+
+  if (destino >= ancla) {
+    const finales = obtenerFinalesDeBloqueo(franjas, ancla);
+    return { inicio: ancla, fin: finales.reverse().find((hora) => hora <= destino) ?? primera.fin };
+  }
+
+  let inicio = ancla;
+  for (const franja of [...franjas].reverse()) {
+    if (franja.fin > inicio) continue;
+    if (franja.fin !== inicio || franja.inicio < destino) break;
+    inicio = franja.inicio;
+  }
+  return { inicio, fin: inicio === ancla ? primera.fin : ancla };
+}
 export function horarioDia(fecha: string): Franja | null {
   const dia = instante(fecha, 720).getUTCDay();
   return dia === 0
