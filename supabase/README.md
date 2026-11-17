@@ -11,12 +11,39 @@ PostgreSQL de Supabase con las tablas, reglas y seguridad de la app. El diseño 
 | URL | `https://hiechbnorpgzrwfgufjp.supabase.co` |
 | Clave para la app | La **publishable** (`sb_publishable_…`), en Project Settings → API. Va en el `.env` (ver [.env.template](../.env.template)); se comparte con el equipo por un canal privado |
 
-Creado el 17 de noviembre de 2026 con las 5 migraciones y el seed de esta carpeta. Se probó en el proyecto real: registro con vinculación de ficha, agendar, choque de horario, aprobación pendiente, cancelación y permisos. El asesor de seguridad de Supabase solo marca las 9 funciones RPC que la app debe poder llamar (validan el rol por dentro).
+Creado el 17 de noviembre de 2026 con las migraciones, el seed y la Edge Function de esta carpeta. Se probó en el proyecto real: registro con vinculación de ficha, agendar, choque de horario, aprobación pendiente, cancelación y permisos. El asesor de seguridad de Supabase solo marca las 9 funciones RPC que la app debe poder llamar (validan el rol por dentro).
 
 **Pendiente (requiere el panel de Supabase):**
 1. **Authentication → Sign In / Providers → Email**: desactivar **Confirm email** mientras se desarrolla, para que el registro (RF-01) entre directo.
 2. ~~Crear la cuenta del odontólogo~~ Hecho el 17 de noviembre: la cuenta del Dr. Camilo Bedoya Orozco tiene rol `odontologo` y ve la agenda completa. Para repetirlo en otro proyecto: **Authentication → Users → Add user** (con «Auto Confirm User») y [crear_odontologo.sql](crear_odontologo.sql) en el **SQL Editor**.
-3. Cuando el cliente los confirme: teléfono y coordenadas del consultorio (`update public.configuracion set telefono = …, latitud = …, longitud = … where id = 1;`).
+3. (Opcional) **Authentication → Attack Protection**: activar la protección de contraseñas filtradas (HaveIBeenPwned), si el plan la incluye. Es el único aviso de seguridad pendiente además de las RPC intencionales.
+4. Cuando el cliente los confirme: teléfono y coordenadas del consultorio (`update public.configuracion set telefono = …, latitud = …, longitud = … where id = 1;`).
+
+## Notificaciones push (RF-11, RF-13, RF-16, RF-17)
+
+```
+cambio en una cita / pg_cron (recordatorio 15 min, resumen 8:00 a. m.)
+        │ triggers y funciones de la base
+        ▼
+tabla notificaciones (enviada_push = false) ──► la app las lista en P03 y O11
+        │ pg_cron cada minuto, solo si hay pendientes (pg_net + secreto de Vault)
+        ▼
+Edge Function enviar-notificaciones ──► Expo Push ──► teléfonos con token en tokens_push
+```
+
+- La app guarda el token de Expo del teléfono en `tokens_push` al iniciar sesión (`POST /rest/v1/tokens_push`). Sin token, el aviso solo aparece dentro de la app.
+- La función marca cada notificación como enviada una sola vez, borra los tokens que Expo reporta como `DeviceNotRegistered` y no reenvía avisos de más de 24 horas.
+- Seguridad: la función no acepta JWT; exige el encabezado `x-secreto-cron`, que se compara con el secreto `secreto_cron_push` de Supabase Vault. Sin él responde 401.
+- Los secretos `project_url` y `secreto_cron_push` ya están en Vault. En otro proyecto se crean una vez en el SQL Editor:
+
+  ```sql
+  select vault.create_secret('https://<ref>.supabase.co', 'project_url');
+  select vault.create_secret(encode(extensions.gen_random_bytes(32), 'hex'), 'secreto_cron_push');
+  ```
+
+- Para recibir push en Android hace falta un development build o un APK de EAS con credenciales de FCM; en Expo Go no llegan (ver especificación, sección 7).
+- Probado el 17/11/2026: un aviso de prueba pasó por el cron, la función y Expo, que devolvió `DeviceNotRegistered` para el token falso; la función lo borró y marcó el aviso.
+- Redesplegar después de cambiar el código: `npx supabase functions deploy enviar-notificaciones --no-verify-jwt`.
 
 ## Archivos
 
@@ -27,6 +54,9 @@ Creado el 17 de noviembre de 2026 con las 5 migraciones y el seed de esta carpet
 | `migrations/…_seguridad.sql` | Seguridad por rol con RLS (RF-03) y permisos de las funciones |
 | `migrations/…_recordatorios_cron.sql` | Recordatorios cada 15 min y resumen diario a las 8:00 a. m. con pg_cron (RF-16, RF-17) |
 | `migrations/…_ajustes_seguridad.sql` | Ajustes que pidió el asesor de seguridad de Supabase |
+| `migrations/…_envio_push_cron.sql` | pg_net, validación del secreto y cron que invoca la Edge Function de push |
+| `functions/enviar-notificaciones/` | Edge Function que manda las notificaciones por Expo Push |
+| `../src/types/database.ts` | Tipos TypeScript generados de la base, para la app |
 | `seed.sql` | Datos de ejemplo: horario, almuerzo, 4 servicios con precio, 5 fichas de pacientes y la agenda del jueves 19 de noviembre de 2026 |
 | `crear_odontologo.sql` | Convierte una cuenta en la del odontólogo (una sola vez) |
 | `config.toml` | Configuración de la CLI de Supabase |
