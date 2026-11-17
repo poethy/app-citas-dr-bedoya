@@ -1,4 +1,14 @@
-# Bitácora de desarrollo
+# Bitácora de avances
+
+Requisito del curso (sección 7 del documento del proyecto). Una fila por avance o PR, agregada después de cada merge.
+
+| Fecha | Objetivo de clase | Tarea realizada | Responsable | PR / commit | Dificultad | Observación del docente | Siguiente paso |
+| --- | --- | --- | --- | --- | --- | --- | --- |
+| 2026-11-09 | Hito 1 · Definición | Diseño completo en Figma: wireframes, flujo de navegación y alta fidelidad | | | | | Revisión del equipo |
+| 2026-11-10 | Hito 1 · Definición | Especificación técnica, feedback del equipo (precios, anticipación para agendar, flujo por rol) y prueba del prototipo | | | | | Base de datos |
+| 2026-11-17 | Hito 1 · Definición | Base de datos en Supabase: tablas, reglas, seguridad por rol, datos de ejemplo y pruebas | | | | | Crear el proyecto Expo |
+
+## Implementación del frontend en revisión
 
 ## 17 de noviembre de 2026
 
@@ -12,10 +22,16 @@ Evidencia: código en src; pruebas en tests; matriz en docs/matriz-requisitos.md
 
 Dificultades resueltas: aislamiento del servidor local durante la verificación; configuración de modo de color con NativeWind; declaración explícita de pantallas del Drawer en Expo 58; tipado genérico de WebView; prioridad de clases en componentes de texto.
 
-Siguiente paso de validación: probar la app en Android real con Expo Go compatible, comprobar permisos/GPS/segundo plano y confirmar coordenadas y teléfono del consultorio. Backend, sincronización entre dispositivos y notificaciones push quedan para la otra persona responsable.
+Siguiente paso de validación: probar la app en Android real con Expo Go compatible, comprobar permisos/GPS/segundo plano y confirmar coordenadas y teléfono del consultorio. La integración con el backend, la sincronización entre dispositivos y los push requieren coordinación con la otra persona responsable.
 
 ### Corrección de navegación del menú
 
 Se reprodujo que Mi perfil cerraba el menú y dejaba visible el inicio. Las pantallas adicionales de ambos roles estaban dentro de Fragment, que Expo Router ignora al registrar las rutas del Drawer. Se declararon directamente sus componentes Screen en MenuRol.
 
 Verificación en navegador: Mi perfil, Notificaciones desde menú y campana, Anticipación mínima, Bloquear horarios y Servicios y confirmación abren su contenido. También se comprobó el regreso desde las pantallas del menú. TypeScript y ESLint pasaron. La comprobación de esta corrección en Expo Go desde un teléfono sigue pendiente.
+
+### Preparación del PR
+
+Rama `codex/frontend-citas-flujo-completo`, con los cambios recientes de main integrados y sin modificar el backend. Se conservó el historial previo de la bitácora y la configuración pública para la integración de Supabase. El frontend pasó TypeScript, ESLint y sus 32 pruebas después de combinar ambas ramas.
+
+La suite existente de `supabase/pruebas` presentó dos fallos: «Cita de Ana muy cercana» devuelve FUERA_DE_HORARIO y «RF-12 cancelar con menos de 24 h» devuelve CITA_NO_EXISTE. El primer caso calcula su inicio con `date_trunc('hour', now()) + interval '3 hours'`; el segundo depende de esa cita. Los archivos de supabase son idénticos a origin/main y no se cambiaron pruebas ni migraciones. Se abre el PR en borrador con estos resultados y la validación Android pendiente.

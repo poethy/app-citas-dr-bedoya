@@ -2,7 +2,7 @@
 
 Versión 2.0 · 17 de noviembre de 2026 · Decisiones de negocio acordadas.
 
-El documento separa el trabajo del frontend del trabajo del backend. La etapa actual implementará únicamente el frontend con datos simulados persistentes. Otra persona implementará el backend; su diseño, SQL, seguridad y contrato HTTP se conservan en la Parte II. Los ejemplos SQL describen trabajo por realizar: no se han creado ni desplegado migraciones.
+El documento separa el trabajo del frontend del trabajo del backend. El frontend de esta entrega usa datos simulados persistentes. El equipo ya incorporó un backend de Supabase desde main, documentado en `supabase/README.md`; esta entrega lo conserva sin modificar ni aplicar migraciones. La Parte II reúne su contrato y los ajustes acordados que deben contrastarse antes de integrar ambos trabajos. Los ejemplos SQL de este documento no reemplazan las migraciones vigentes.
 
 ## Parte I Frontend
 
@@ -203,7 +203,7 @@ Orden: base y rutas; componentes, formularios y cálculo; persistencia y consult
 
 ## Parte II Backend
 
-La persona responsable implementará Supabase Auth, PostgreSQL, RLS, RPC, Edge Functions y tareas programadas. El frontend cambia el proveedor mock por el remoto manteniendo modelos y firmas de servicio. El servidor es autoridad para rol, reloj, disponibilidad, vencimiento y persistencia; nunca confía en el rol enviado por el cliente.
+El backend incorporado desde main utiliza Supabase Auth, PostgreSQL, RLS, RPC, Edge Functions y tareas programadas. Su estado y despliegue están en [supabase/README.md](../supabase/README.md); el esquema aplicado está en [supabase/migrations/](../supabase/migrations/) y los tipos generados en `src/types/database.ts`. El frontend cambiará el proveedor mock por el remoto después de contrastar las reglas acordadas. El servidor es autoridad para rol, reloj, disponibilidad, vencimiento y persistencia; nunca confía en el rol enviado por el cliente.
 
 ### B1 Elección de Supabase
 
@@ -252,8 +252,8 @@ horario_atencion   bloqueos_recurrentes   bloqueos   configuracion (1 fila)
 | `horario_atencion` | Horario por día de la semana | `dia_semana` (0 = domingo), `hora_inicio`, `hora_fin` |
 | `bloqueos_recurrentes` | Bloqueos que se repiten, como el almuerzo | `dia_semana`, `hora_inicio`, `hora_fin`, `motivo` |
 | `bloqueos` | Bloqueos puntuales (RF-19) | `rango` (`tstzrange`), `motivo` |
-| `configuracion` | Una sola fila con reglas y datos del consultorio | `anticipacion_agendar_horas`, `anticipacion_cambios_horas` (RF-15), `recordatorio_horas_antes`, `direccion`, `telefono`, `latitud`, `longitud` |
-| `citas` | Citas y solicitudes | `paciente_id`, `servicio_id`, `inicio`, `fin`, `estado`, `origen` (`app`/`consultorio`), `recordatorio_enviado_para`, `precio_acordado_cop`, `duracion_acordada_min` |
+| `configuracion` | Una sola fila con reglas y datos del consultorio | `anticipacion_agendar_horas` (RF-29), `anticipacion_cambios_horas` (RF-15), `recordatorio_horas_antes`, `nombre_profesional`, `especialidad`, `lugar`, `direccion`, `telefono`, `latitud`, `longitud` |
+| `citas` | Citas y solicitudes | `numero`, `paciente_id`, `servicio_id`, `inicio`, `fin`, `estado`, `origen` (`app`/`consultorio`), `creado_por`, `respondida_en`, `recordatorio_enviado_para`; requisitos por contrastar: `precio_acordado_cop`, `duracion_acordada_min` |
 | `notificaciones` | Avisos de P03 y O11, que también alimentan los push (RF-11, RF-13, RF-16, RF-17) | `destinatario_id`, `cita_id`, `tipo`, `titulo`, `cuerpo`, `leida`, `enviada_push` |
 | `tokens_push` | Token de Expo Push de cada dispositivo | `perfil_id`, `token` |
 
@@ -263,7 +263,7 @@ Otras transiciones: `pendiente` → `confirmada` o `rechazada`; `pendiente` o `c
 
 #### B2.3 Esquema SQL inicial
 
-Va en `supabase/migrations/0001_esquema.sql`. Las funciones y políticas van en migraciones aparte (B3).
+El siguiente bloque es una propuesta de referencia, no una migración aplicada. El esquema vigente está en `supabase/migrations/` con nombres fechados; incluye `citas.numero`, `citas.respondida_en` y los datos del consultorio en `configuracion`. Cualquier ajuste por las reglas de esta entrega requiere una migración nueva. No editar las existentes.
 
 ```sql
 create extension if not exists btree_gist;
@@ -433,14 +433,14 @@ El vencimiento es efectivo en la hora de inicio. El job de vencimientos material
 
 #### B5.1 Propuesta de recordatorios y resumen diario
 
-- **pg_cron** ejecuta cada 15 minutos la Edge Function `enviar-notificaciones`.
+- **pg_cron** genera recordatorios cada 15 minutos; otro job invoca la Edge Function `enviar-notificaciones` cada minuto para despachar avisos pendientes, según el backend recibido de main.
 - **Recordatorio (RF-16):** citas `confirmada` cuyo `inicio − recordatorio_horas_antes ≤ ahora < inicio` y cuyo `recordatorio_enviado_para` sea distinto de `inicio`. Crea la notificación y guarda `recordatorio_enviado_para = inicio`.
   - Si la cita se cancela, deja de estar confirmada y no se envía nada (escenario 2).
   - Si se reprograma, cambia `inicio` y se programa un recordatorio nuevo.
 - **Resumen del día (RF-17):** a la hora de inicio de la jornada (8:00 a. m. en Bogotá), una notificación para el odontólogo con las citas confirmadas del día.
 - **Envío:** la misma función manda por **Expo Push** las notificaciones con `enviada_push = false` a los tokens del destinatario, y las marca como enviadas.
 
-Se mantienen como propuestas por confirmar los 24 h de recordatorio, la hora del resumen y el mecanismo push/local. Un recordatorio se basa en el inicio vigente y nunca en una solicitud vencida. Al reprogramar o cancelar, anular el recordatorio anterior. El resumen diario incluye las confirmadas; las pendientes pueden mostrarse aparte sin presentarlas como confirmadas.
+El backend existente usa el resumen a las 8:00 a. m. de Bogotá y Expo Push; la demo frontend mantiene avisos locales. La integración debe comprobar que un recordatorio se basa en el inicio vigente y nunca en una solicitud vencida. Al reprogramar o cancelar, anular el recordatorio anterior. El resumen diario incluye las confirmadas; las pendientes pueden mostrarse aparte sin presentarlas como confirmadas.
 
 ### B6 Contrato HTTP y errores
 
@@ -505,6 +505,8 @@ Las respuestas de citas incluyen precio_acordado_cop y duracion_acordada_min; el
 
 ### B7 Notificaciones y despliegue
 
+El backend recibido de main ya incluye la Edge Function `enviar-notificaciones`, protegida con un secreto de Vault, y el job de envío cada minuto. Su configuración y pruebas constan en [supabase/README.md](../supabase/README.md#notificaciones-push-rf-11-rf-13-rf-16-rf-17). La app todavía debe registrar los tokens del dispositivo en `tokens_push`; no se han conectado ni probado push remotos en esta demo.
+
 
 | Tipo | Cómo llega |
 | --- | --- |
@@ -535,7 +537,7 @@ EXPO_PUBLIC_SUPABASE_KEY=<clave publishable o anon del proyecto>
 
 No se requiere Supabase para la demo mock. La clave pública no es un secreto; RLS protege los datos. Nunca incluir service_role ni secretos de Edge Functions en la app o el repositorio. Conservar `.env` excluido.
 
-Comandos previstos una vez exista la implementación: `npm install`, `npx expo start`, `npx supabase db push` y `npx eas-cli@latest build -p android --profile development`. Cargar el seed con el procedimiento soportado por la versión de Supabase CLI elegida o con el SQL Editor. No afirmar que estos comandos ya ejecutan este repositorio, que todavía contiene documentación.
+Para ejecutar la demo frontend, seguir el README raíz. Las pruebas del backend están en `supabase/pruebas` y se ejecutan con `npm install` y `npm test` desde esa carpeta. Los despliegues y la carga de datos corresponden a la persona responsable del backend después de revisar el PR; no aplicar migraciones ni recargar el seed como parte de la demo.
 
 ### B8 Validación y coordinación con frontend
 
@@ -546,7 +548,7 @@ El frontend entrega modelos, interfaces de respuesta, mappers, firmas de servici
 ### B9 Pendientes que no cambian las decisiones cerradas
 
 - Confirmar horario, almuerzo, servicios, precios, teléfono y coordenadas reales del consultorio.
-- Definir recordatorios y resumen diario (horario, canal y build requerido).
+- Contrastar con el backend existente los recordatorios cada 15 minutos, el resumen diario a las 8:00 a. m. de Bogotá y el envío por Expo Push; registrar tokens y probar un development build de Android.
 - Definir vinculación segura de pacientes que llamaron y después crean cuenta; la propuesta original usaba teléfono, pero requiere verificación.
 - Definir si una reprogramación hecha por el doctor de un servicio con aprobación confirma directamente o conserva el estado previo. Lo acordado de confirmación directa cubre citas nuevas registradas por él; el paciente sí reaplica la regla del servicio.
 - Confirmar requisitos de verificación de correo de Supabase para que el registro y la sesión inicial coincidan con RF-01.

@@ -6,7 +6,11 @@ App móvil para gestionar citas del consultorio del Dr. Camilo Bedoya Orozco en 
 
 Frontend implementado con React Native, TypeScript y Expo SDK 58. Incluye navegación por rol, agendamiento, citas, solicitudes, agenda diaria/semanal, servicios, anticipaciones, bloqueos, avisos y mapa.
 
-La demo guarda datos y sesión con AsyncStorage. Cerrar y volver a abrir conserva los cambios. Cambiar de cuenta permite actuar como paciente y odontólogo en el mismo dispositivo. El backend lo desarrollará otra persona; su diseño sigue en la Parte II de las especificaciones. No hay autenticación real ni sincronización entre teléfonos.
+La demo guarda datos y sesión con AsyncStorage. Cerrar y volver a abrir conserva los cambios. Cambiar de cuenta permite actuar como paciente y odontólogo en el mismo dispositivo. El equipo ya incorporó el backend de Supabase en `main`; se conserva en `supabase/` y su integración con esta demo queda pendiente. La demo no utiliza autenticación remota ni sincronización entre teléfonos.
+
+## Trabajo del equipo
+
+Consulta [CONTRIBUTING.md](CONTRIBUTING.md) para ramas y revisiones, y [AGENTS.md](AGENTS.md) para las instrucciones de desarrollo. Los cambios entran mediante PR y revisión de otra persona del equipo.
 
 ## Reglas acordadas
 
@@ -31,6 +35,8 @@ Estilo de referencia: C:/Users/StivenM/Documents/react-native-parcial. Prioridad
 | [Fuente editable de requerimientos](docs/requerimientos.md) | Contenido utilizado para generar el PDF. |
 | [Especificaciones técnicas](docs/especificaciones-tecnicas.md) | Parte I frontend; Parte II backend y contrato de integración. |
 | [Handoff](docs/Handoff_App_Citas.md) | Decisiones, ajustes de Figma para código y próximos pasos. |
+| [Backend Supabase](supabase/README.md) | Migraciones, pruebas y despliegue recibidos de main; integración pendiente con la demo. |
+| [Pantallas y datos](docs/pantallas-y-datos.md) | Contrato de datos por pantalla para integrar el backend. |
 
 Proyecto_Final_Movil_II.docx se conserva sin modificaciones. Datos_ejemplo_wireframes.md no está disponible en el árbol de trabajo y no se requiere para leer estos documentos.
 

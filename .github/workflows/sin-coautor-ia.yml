@@ -1,0 +1,48 @@
+name: Sin coautor de IA
+
+on:
+  pull_request:
+    types: [opened, edited, reopened, synchronize, ready_for_review]
+
+permissions:
+  contents: read
+  pull-requests: read
+
+jobs:
+  revisar:
+    name: Sin coautor de IA
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Revisar commits, título y descripción del PR
+        env:
+          BASE: ${{ github.event.pull_request.base.sha }}
+          HEAD: ${{ github.event.pull_request.head.sha }}
+          TITULO: ${{ github.event.pull_request.title }}
+          CUERPO: ${{ github.event.pull_request.body }}
+        run: |
+          patron=.github/patron-coautor-ia.txt
+          fallas=0
+
+          for sha in $(git rev-list "$BASE..$HEAD"); do
+            if git log -1 --format=%B "$sha" | grep -Eiq -f "$patron"; then
+              echo "::error::El commit $(git log -1 --format='%h %s' "$sha") tiene coautoría o firma de IA:"
+              git log -1 --format=%B "$sha" | grep -Ei -f "$patron" | sed 's/^/    /'
+              fallas=1
+            fi
+          done
+
+          if printf '%s\n%s\n' "$TITULO" "$CUERPO" | grep -Eiq -f "$patron"; then
+            echo "::error::El título o la descripción del PR tiene coautoría o firma de IA:"
+            printf '%s\n%s\n' "$TITULO" "$CUERPO" | grep -Ei -f "$patron" | sed 's/^/    /'
+            fallas=1
+          fi
+
+          if [ "$fallas" -ne 0 ]; then
+            echo "Quita esas líneas (git commit --amend o git rebase) y edita el PR. Ver CONTRIBUTING.md › Commits."
+            exit 1
+          fi
+          echo "✔ Sin coautoría ni firmas de IA."

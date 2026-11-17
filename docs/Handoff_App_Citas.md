@@ -1,6 +1,6 @@
 # Handoff de App Citas Dr Camilo Bedoya
 
-Actualizado el 17 de noviembre de 2026. Frontend de demo implementado; backend pendiente a cargo de otra persona. Se agregaron instrucciones de ejecución, matriz y bitácora. Prueba de GPS en Android real pendiente.
+Actualizado el 17 de noviembre de 2026. Frontend de demo implementado. Se conservaron los cambios del backend recibidos de main, cuya integración con el frontend sigue pendiente. Prueba de GPS en Android real pendiente.
 
 ## Cliente y alcance
 
@@ -26,7 +26,15 @@ Las 58 pantallas representan rutas y variantes de estado, no 58 archivos indepen
 
 ## Etapa actual y responsable del backend
 
-Se construyó el frontend con mocks persistentes en el teléfono. Conserva cambios al cerrar y volver a abrir; cambiar de sesión permite demostrar la interacción paciente/doctor en el mismo dispositivo. No hay sincronización entre dispositivos ni Auth real. El backend lo desarrollará otra persona con la Parte II de las especificaciones: Supabase, SQL, RLS, RPC y notificaciones. Esta información se conserva y se integra posteriormente.
+Se construyó el frontend con mocks persistentes en el teléfono. Conserva cambios al cerrar y volver a abrir; cambiar de sesión permite demostrar la interacción paciente/doctor en el mismo dispositivo. No hay sincronización entre dispositivos ni Auth real en esta demo. El backend de otra persona del equipo ya está incorporado desde main y se conserva sin cambiar sus migraciones ni desplegar nada.
+
+### Backend recibido de main
+
+Según [supabase/README.md](../supabase/README.md), el backend está desplegado: tablas, RLS, prevención de solapamientos, RPC, avisos por triggers, recordatorios con pg_cron y Edge Function de envío push. Incluye una cuenta del odontólogo y tipos en `src/types/database.ts`. El contrato por pantalla está en [pantallas-y-datos.md](pantallas-y-datos.md). Estas piezas no se conectan todavía a los servicios mock.
+
+La integración debe contrastar las reglas nuevas de vencimiento, precio/duración históricos y exenciones del doctor con las RPC vigentes. Los cambios necesarios se harán en migraciones nuevas y se revisarán por separado. El envío push requiere registrar tokens y probar un development build en Android. La configuración de correo y los datos reales del consultorio siguen descritos en el README del backend.
+
+Se conservan [CONTRIBUTING.md](../CONTRIBUTING.md), [AGENTS.md](../AGENTS.md) y el historial previo de la bitácora. El PR no modifica ni aplica migraciones de Supabase.
 
 El vencimiento se reconoce al hidratar, volver al primer plano, consultar o aprobar; con la app abierta se actualiza al llegar la hora. No se promete ejecución de jobs con la demo cerrada. El estado efectivo es vencida desde la hora de inicio.
 
