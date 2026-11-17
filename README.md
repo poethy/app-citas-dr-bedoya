@@ -17,7 +17,7 @@ React Native + TypeScript + Expo (SDK 58), NativeWind, Expo Router, Supabase (Au
 
 - [CONTRIBUTING.md](CONTRIBUTING.md): ramas, commits, Pull Requests y revisión.
 - [AGENTS.md](AGENTS.md): instrucciones para asistentes de IA (Claude Code lo lee desde [CLAUDE.md](CLAUDE.md)).
-- Ningún commit ni PR lleva coautoría de IA; lo revisan un hook local y un chequeo en GitHub.
+- Ningún commit ni PR lleva coautoría de IA; el chequeo «Sin coautor de IA» lo revisa en cada PR.
 
 ## Documentos
 

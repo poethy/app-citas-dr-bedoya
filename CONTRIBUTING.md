@@ -21,12 +21,6 @@ git clone https://github.com/poethy/app-citas-dr-bedoya.git
 cd app-citas-dr-bedoya
 ```
 
-```bash
-git config core.hooksPath .githooks
-```
-
-El último comando activa un chequeo local que rechaza commits con coautoría de IA (ver [Commits](#commits)).
-
 Copia `.env.template` como `.env` y pide los valores al equipo por un canal privado. La base de datos y su proyecto en Supabase están descritos en [supabase/README.md](supabase/README.md).
 
 ## Ramas
@@ -53,7 +47,7 @@ Copia `.env.template` como `.env` y pide los valores al equipo por un canal priv
 - En español, en imperativo y con una idea por commit: «Agrega el contador de duración en C02», «Corrige el cálculo de franjas con almuerzo».
 - Si el commit corresponde a un requerimiento o pantalla, nómbralo: «RF-28: valida duración vacía, no numérica o cero (C03)».
 - **Sin coautor de IA.** No pueden aparecer líneas como `Co-Authored-By: Claude …`, `Co-authored-by: Copilot …`, «Generated with …» ni firmas de herramientas, ni en el commit ni en el PR. El autor es la persona que hace el trabajo, aunque use una IA para ayudarse.
-  - El hook local (`.githooks/commit-msg`) rechaza el commit si encuentra esas líneas.
+  - Si usas una IA o una herramienta que agrega esas líneas sola, quítalas antes de hacer commit.
   - En GitHub, el chequeo **«Sin coautor de IA»** revisa todos los commits del PR y el texto del PR.
   - Si ya hiciste un commit con esas líneas, corrígelo antes de subirlo con `git commit --amend` (último commit) o pídele ayuda al equipo.
 
