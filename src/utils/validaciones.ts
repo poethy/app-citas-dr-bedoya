@@ -11,6 +11,16 @@ export const registroSchema = perfilSchema.extend({
     .regex(/[a-zA-Z]/, 'Incluye una letra.')
     .regex(/\d/, 'Incluye un número.'),
 });
+
+export const pacienteNuevaCitaSchema = z.object({
+  nombre: z.string().trim().min(1, 'Escribe el nombre del paciente.'),
+  telefono: z.preprocess(
+    (valor) =>
+      typeof valor === 'string' ? valor.replace(/[\s().-]/g, '').replace(/^\+57/, '') : valor,
+    perfilSchema.shape.telefono,
+  ),
+});
+
 export function validarNumero(valor: string, tipo: 'precio' | 'duracion'): string | null {
   if (!valor.trim())
     return tipo === 'precio'

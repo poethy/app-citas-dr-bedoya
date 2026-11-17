@@ -1,7 +1,7 @@
 import { useState } from 'react';
 import { useAccion, useDatos } from '@/hooks/useDatos';
 import { repositorio } from '@/services/mock/repositorio';
-import { Boton, ErrorAviso, Pantalla, Tarjeta, Texto } from '@/components/ui';
+import { Boton, ErrorAviso, Pantalla, Texto } from '@/components/ui';
 import Contador from '@/components/Contador';
 export default function Anticipacion() {
   const { data } = useDatos();
@@ -39,6 +39,7 @@ export default function Anticipacion() {
         max={72}
         paso={1}
         unidad="horas"
+        mostrarLimites={false}
       />
       <Contador
         titulo="Para cancelar o reprogramar"
@@ -48,14 +49,8 @@ export default function Anticipacion() {
         max={72}
         paso={1}
         unidad="horas"
+        mostrarLimites={false}
       />
-      <Tarjeta className="bg-navy-900">
-        <Texto className="text-navy-300 text-xs">REGLAS POR ROL</Texto>
-        <Texto className="text-white text-xs">
-          El paciente cumple ambos plazos. El odontólogo puede gestionar excepciones por llamada,
-          conservando los horarios y evitando cruces.
-        </Texto>
-      </Tarjeta>
     </Pantalla>
   );
 }

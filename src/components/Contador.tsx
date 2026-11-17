@@ -8,8 +8,18 @@ interface Props {
   max: number;
   paso: number;
   unidad: string;
+  mostrarLimites?: boolean;
 }
-export default function Contador({ titulo, valor, onChange, min, max, paso, unidad }: Props) {
+export default function Contador({
+  titulo,
+  valor,
+  onChange,
+  min,
+  max,
+  paso,
+  unidad,
+  mostrarLimites = true,
+}: Props) {
   return (
     <Tarjeta>
       <Texto className="text-xs font-medium">{titulo}</Texto>
@@ -37,9 +47,11 @@ export default function Contador({ titulo, valor, onChange, min, max, paso, unid
           <Icono nombre="plusWhite" />
         </Pressable>
       </View>
-      <Texto className="text-[11px] text-muted">
-        Pasos de {paso} · mínimo {min}, máximo {max}.
-      </Texto>
+      {mostrarLimites && (
+        <Texto className="text-[11px] text-muted">
+          Pasos de {paso} · mínimo {min}, máximo {max}.
+        </Texto>
+      )}
     </Tarjeta>
   );
 }

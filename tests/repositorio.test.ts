@@ -1,6 +1,7 @@
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 import { createHash, randomUUID } from 'node:crypto';
 import { instante, fechaLocal, sumarDias } from '../src/utils/fechas';
+import { pacienteNuevaCitaSchema } from '../src/utils/validaciones';
 const disco = vi.hoisted(() => ({ datos: new Map<string, string>(), fallar: false }));
 vi.mock('@react-native-async-storage/async-storage', () => ({
   default: {
@@ -62,6 +63,34 @@ describe('Repositorio persistente', () => {
     const results = await Promise.allSettled([r.crearCita(datos), r.crearCita(datos)]);
     expect(results.filter((x) => x.status === 'fulfilled')).toHaveLength(1);
     expect(results.filter((x) => x.status === 'rejected')).toHaveLength(1);
+  });
+  it('registra como odontólogo una cita con celular pegado en formato internacional', async () => {
+    const r = await repo();
+    const datos = await r.consultar();
+    const ana = datos.perfiles.find((p) => p.id === 'ana')!;
+    const telefonoPegado = `+57 (${ana.telefono.slice(0, 3)}) ${ana.telefono.slice(3, 6)}-${ana.telefono.slice(6)}`;
+    const paciente = pacienteNuevaCitaSchema.parse({
+      nombre: ` ${ana.nombre} `,
+      telefono: telefonoPegado,
+    });
+    expect(
+      pacienteNuevaCitaSchema.safeParse({ nombre: ana.nombre, telefono: '+57 310' }).success,
+    ).toBe(false);
+
+    await r.login('doctor@demo.com', 'Demo2026');
+    let fecha = sumarDias(fechaLocal(), 4);
+    if (instante(fecha, 720).getUTCDay() === 0) fecha = sumarDias(fecha, 1);
+    const cita = await r.crearCita({
+      servicioId: 'resina',
+      inicio: instante(fecha, 480).toISOString(),
+      pacienteNombre: paciente.nombre,
+      telefono: paciente.telefono,
+    });
+    expect(cita).toMatchObject({
+      pacienteId: ana.id,
+      telefono: ana.telefono,
+      estado: 'confirmada',
+    });
   });
   it('no elimina las citas al cerrar sesión', async () => {
     const r = await repo();
