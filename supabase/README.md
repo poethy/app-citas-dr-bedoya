@@ -15,7 +15,7 @@ Creado el 17 de noviembre de 2026 con las 5 migraciones y el seed de esta carpet
 
 **Pendiente (requiere el panel de Supabase):**
 1. **Authentication → Sign In / Providers → Email**: desactivar **Confirm email** mientras se desarrolla, para que el registro (RF-01) entre directo.
-2. Crear la cuenta del odontólogo en **Authentication → Users → Add user** (con «Auto Confirm User») y ejecutar [crear_odontologo.sql](crear_odontologo.sql) en el **SQL Editor** con su correo.
+2. ~~Crear la cuenta del odontólogo~~ Hecho el 17 de noviembre: la cuenta del Dr. Camilo Bedoya Orozco tiene rol `odontologo` y ve la agenda completa. Para repetirlo en otro proyecto: **Authentication → Users → Add user** (con «Auto Confirm User») y [crear_odontologo.sql](crear_odontologo.sql) en el **SQL Editor**.
 3. Cuando el cliente los confirme: teléfono y coordenadas del consultorio (`update public.configuracion set telefono = …, latitud = …, longitud = … where id = 1;`).
 
 ## Archivos
