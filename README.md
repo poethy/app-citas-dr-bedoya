@@ -13,6 +13,12 @@ Proyecto final de Móvil II.
 
 React Native + TypeScript + Expo (SDK 58), NativeWind, Expo Router, Supabase (Auth y base de datos), Axios + TanStack Query, Zustand, y OpenStreetMap + Leaflet con expo-location para el mapa.
 
+## Cómo trabajamos
+
+- [CONTRIBUTING.md](CONTRIBUTING.md): ramas, commits, Pull Requests y revisión.
+- [AGENTS.md](AGENTS.md): instrucciones para asistentes de IA (Claude Code lo lee desde [CLAUDE.md](CLAUDE.md)).
+- Ningún commit ni PR lleva coautoría de IA; lo revisan un hook local y un chequeo en GitHub.
+
 ## Documentos
 
 | Archivo | Contenido |

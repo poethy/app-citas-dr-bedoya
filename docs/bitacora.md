@@ -1,0 +1,9 @@
+# Bitácora de avances
+
+Requisito del curso (sección 7 del documento del proyecto). Una fila por avance o PR, agregada después de cada merge.
+
+| Fecha | Objetivo de clase | Tarea realizada | Responsable | PR / commit | Dificultad | Observación del docente | Siguiente paso |
+| --- | --- | --- | --- | --- | --- | --- | --- |
+| 2026-11-09 | Hito 1 · Definición | Diseño completo en Figma: wireframes, flujo de navegación y alta fidelidad | | | | | Revisión del equipo |
+| 2026-11-10 | Hito 1 · Definición | Especificación técnica, feedback del equipo (precios, anticipación para agendar, flujo por rol) y prueba del prototipo | | | | | Base de datos |
+| 2026-11-17 | Hito 1 · Definición | Base de datos en Supabase: tablas, reglas, seguridad por rol, datos de ejemplo y pruebas | | | | | Crear el proyecto Expo |

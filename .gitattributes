@@ -1,0 +1,5 @@
+# Scripts y patrones que lee la shell: siempre con saltos de línea LF, también en Windows
+.githooks/*                       text eol=lf
+.github/patron-coautor-ia.txt     text eol=lf
+.github/workflows/*.yml           text eol=lf
+*.sh                              text eol=lf
