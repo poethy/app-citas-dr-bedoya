@@ -1,0 +1,11 @@
+<svg preserveAspectRatio="none" overflow="visible" style="display: block;" width="11" height="11" viewBox="0 0 11 11" fill="none" xmlns="http://www.w3.org/2000/svg">
+<g id="icon/calendar" clip-path="url(#clip0_0_53)">
+<path id="Vector" d="M2.29167 1.83333H8.70833C9.21459 1.83333 9.625 2.24374 9.625 2.75V9.16667C9.625 9.67293 9.21459 10.0833 8.70833 10.0833H2.29167C1.78541 10.0833 1.375 9.67293 1.375 9.16667V2.75C1.375 2.24374 1.78541 1.83333 2.29167 1.83333Z" stroke-width="0.916667" stroke-linecap="round" stroke-linejoin="round" stroke="#0B1F3A"/>
+<path id="Vector_2" d="M7.33333 0.916667V2.75M3.66667 0.916667V2.75M1.375 4.58333H9.625" stroke-width="0.916667" stroke-linecap="round" stroke-linejoin="round" stroke="#0B1F3A"/>
+</g>
+<defs>
+<clipPath id="clip0_0_53">
+<rect width="11" height="11" fill="white"/>
+</clipPath>
+</defs>
+</svg>
