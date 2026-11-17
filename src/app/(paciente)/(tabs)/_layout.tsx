@@ -10,7 +10,7 @@ export default function TabsPaciente() {
     <Tabs screenOptions={{ ...opcionesTabs, headerLeft: () => <BotonMenu /> }}>
       <Tabs.Screen
         name="inicio"
-        options={{ title: "Inicio", tabBarIcon: iconoTab("home") }}
+        options={{ title: "Inicio", headerShown: false, tabBarIcon: iconoTab("home") }}
       />
       <Tabs.Screen
         name="agendar"

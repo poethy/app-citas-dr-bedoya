@@ -1,17 +1,26 @@
 // Estados globales reutilizables (G01 a G04 del Figma).
+// `compacto` los muestra dentro de una tarjeta en vez de ocupar toda la pantalla.
 import { ActivityIndicator, Text, View } from "react-native";
 
 import { Boton } from "@/components/Boton";
 import { colores } from "@/constants/tema";
 
-function Contenedor({ children }: { children: React.ReactNode }) {
-  return <View className="flex-1 items-center justify-center gap-4 bg-gris-100 px-8">{children}</View>;
+interface ConCompacto {
+  compacto?: boolean;
+}
+
+function Contenedor({ children, compacto = false }: { children: React.ReactNode } & ConCompacto) {
+  return (
+    <View className={compacto ? "items-center justify-center gap-3 py-6" : "flex-1 items-center justify-center gap-4 bg-gris-100 px-8"}>
+      {children}
+    </View>
+  );
 }
 
 /** G01 · Cargando */
-export function EstadoCarga({ mensaje = "Cargando…" }: { mensaje?: string }) {
+export function EstadoCarga({ mensaje = "Cargando…", compacto }: { mensaje?: string } & ConCompacto) {
   return (
-    <Contenedor>
+    <Contenedor compacto={compacto}>
       <ActivityIndicator size="large" color={colores.navy900} />
       <Text className="font-poppins text-cuerpo text-gris-500">{mensaje}</Text>
     </Contenedor>
@@ -19,9 +28,9 @@ export function EstadoCarga({ mensaje = "Cargando…" }: { mensaje?: string }) {
 }
 
 /** G02 · Sin conexión */
-export function EstadoSinConexion({ onReintentar }: { onReintentar: () => void }) {
+export function EstadoSinConexion({ onReintentar, compacto }: { onReintentar: () => void } & ConCompacto) {
   return (
-    <Contenedor>
+    <Contenedor compacto={compacto}>
       <Text className="text-center font-poppins-semibold text-titulo2 text-gris-900">No hay conexión</Text>
       <Text className="text-center font-poppins text-cuerpo text-gris-500">
         Revisa tu conexión y vuelve a intentarlo.
@@ -32,9 +41,9 @@ export function EstadoSinConexion({ onReintentar }: { onReintentar: () => void }
 }
 
 /** G03 · Error al cargar */
-export function EstadoError({ mensaje, onReintentar }: { mensaje?: string; onReintentar: () => void }) {
+export function EstadoError({ mensaje, onReintentar, compacto }: { mensaje?: string; onReintentar: () => void } & ConCompacto) {
   return (
-    <Contenedor>
+    <Contenedor compacto={compacto}>
       <Text className="text-center font-poppins-semibold text-titulo2 text-gris-900">No pudimos cargar la información</Text>
       <Text className="text-center font-poppins text-cuerpo text-gris-500">
         {mensaje ?? "Ocurrió un problema con el servicio. Intenta de nuevo en unos segundos."}
