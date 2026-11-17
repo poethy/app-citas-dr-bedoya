@@ -354,7 +354,7 @@ supabase-js se usa **solo para Auth**: registro, login, logout, sesión y escuch
 Siguen el mapa de navegación del Figma.
 
 ```
-app/
+src/app/
   _layout.tsx                     Stack raíz: fuentes, QueryClientProvider, escucha de sesión
   index.tsx                       A00: lee la sesión y redirige según el rol (replace)
   (auth)/
@@ -366,7 +366,7 @@ app/
     _layout.tsx                   Drawer + guardia de rol (G04)
     (tabs)/
       _layout.tsx                 Tabs: Inicio · Agendar · Mis citas · Mapa
-      index.tsx                   P01
+      inicio.tsx                  P01  (ruta /inicio)
       agendar/
         _layout.tsx               Stack interno
         index.tsx                 S01
@@ -382,7 +382,7 @@ app/
     _layout.tsx                   Drawer + guardia de rol
     (tabs)/
       _layout.tsx                 Tabs: Agenda · Solicitudes · Nueva cita · Avisos
-      index.tsx                   O01 / O02 / O10
+      agenda.tsx                  O01 / O02 / O10  (ruta /agenda)
       solicitudes.tsx             O04 / O06 / O07
       nueva-cita.tsx              O09
       avisos.tsx                  O11
@@ -396,6 +396,8 @@ app/
   consultorio.tsx                 P05
 ```
 
+> **Rutas:** las pantallas viven en `src/app/` (la opción que recomienda Expo SDK 58 cuando hay carpeta `src/`). Las pestañas de inicio de cada rol se llaman `inicio.tsx` y `agenda.tsx`, no `index.tsx`: los grupos `(paciente)` y `(odontologo)` no agregan segmento a la URL, así que dos `index` chocarían con la ruta `/` de A00.
+>
 > El mapa del Figma dice `cita/[id].tsx`. Como esa ruta también tiene `cita/[id]/reprogramar`, en Expo Router el detalle va en `cita/[id]/index.tsx`.
 
 Los modales de cerrar sesión (P06, O12) y cancelar (M05) son componentes de modal dentro de la pantalla, no rutas.

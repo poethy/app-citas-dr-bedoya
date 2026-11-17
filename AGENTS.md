@@ -45,7 +45,7 @@ Cada pantalla tiene un código (A02, S03, M03, O05, C02…). Úsalo en commits, 
 Las rutas siguen el flujo del Figma. La lista completa está en la sección 6 de la especificación; en resumen:
 
 ```
-app/                 Rutas de Expo Router: (auth), (paciente), (odontologo), cita/[id], solicitud/[id], consultorio
+src/app/             Rutas de Expo Router: (auth), (paciente), (odontologo), cita/[id], solicitud/[id], consultorio
 src/components/      Componentes reutilizables con props tipadas (Boton, Campo, TarjetaCita, Estado*…)
 src/hooks/           Hooks propios y hooks de TanStack Query
 src/services/http/   Cliente Axios (único lugar con baseURL e interceptores)

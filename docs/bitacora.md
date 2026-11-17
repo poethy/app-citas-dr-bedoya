@@ -7,3 +7,4 @@ Requisito del curso (sección 7 del documento del proyecto). Una fila por avance
 | 2026-11-09 | Hito 1 · Definición | Diseño completo en Figma: wireframes, flujo de navegación y alta fidelidad | | | | | Revisión del equipo |
 | 2026-11-10 | Hito 1 · Definición | Especificación técnica, feedback del equipo (precios, anticipación para agendar, flujo por rol) y prueba del prototipo | | | | | Base de datos |
 | 2026-11-17 | Hito 1 · Definición | Base de datos en Supabase: tablas, reglas, seguridad por rol, datos de ejemplo y pruebas | | | | | Crear el proyecto Expo |
+| 2026-11-17 | Hito 1 · Definición y base | Proyecto Expo SDK 58: rutas de los dos roles (Stack, Drawer, Tabs), tema y fuentes del Figma, login y registro con validaciones, guardia de rol y cliente Axios | | | NativeWind en web necesitó `darkMode: "class"`; `babel-preset-expo` no venía en la plantilla | | Construir las pantallas del paciente (P01, S01 a S08) |

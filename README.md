@@ -7,11 +7,36 @@ Proyecto final de Móvil II.
 ## Estado
 
 - **Diseño:** completo en Figma (wireframes, flujo de navegación y alta fidelidad).
-- **Desarrollo:** sin empezar. Todavía hay que cerrar con el equipo algunos huecos de los requerimientos.
+- **Backend:** terminado y desplegado en Supabase (ver [supabase/README.md](supabase/README.md)).
+- **App:** proyecto Expo creado con todas las rutas del flujo, login, registro y guardia de rol. Las demás pantallas están marcadas «en construcción».
 
-## Stack previsto
+## Stack
 
-React Native + TypeScript + Expo (SDK 58), NativeWind, Expo Router, Supabase (Auth y base de datos), Axios + TanStack Query, Zustand, y OpenStreetMap + Leaflet con expo-location para el mapa.
+React Native + TypeScript + Expo (SDK 58), NativeWind 4, Expo Router, Supabase (Auth y base de datos), Axios + TanStack Query, Zustand, zod, y OpenStreetMap + Leaflet con expo-location para el mapa.
+
+## Ejecutar la app
+
+Requisitos: Node.js LTS, npm y la app **Expo Go** en un teléfono Android (misma red Wi-Fi que el computador).
+
+```bash
+npm install
+```
+
+Copia `.env.template` como `.env` y llena la URL y la clave pública de Supabase (pídelas al equipo).
+
+```bash
+npx expo start
+```
+
+Escanea el código QR con Expo Go. Para verla en el navegador: `npx expo start --web`. Si la red no deja conectar el teléfono: `npx expo start --tunnel`.
+
+Antes de abrir un PR:
+
+```bash
+npx tsc --noEmit
+```
+
+Cuentas de prueba: el odontólogo ya existe (pide las credenciales al equipo). Para probar como paciente, regístrate desde la app; si usas el teléfono **3105551234**, la cuenta queda vinculada a la ficha de ejemplo de Ana Gómez.
 
 ## Cómo trabajamos
 
@@ -28,7 +53,7 @@ React Native + TypeScript + Expo (SDK 58), NativeWind, Expo Router, Supabase (Au
 | [docs/pantallas-y-datos.md](docs/pantallas-y-datos.md) | Qué lee y escribe cada pantalla del Figma en la base |
 | [supabase/README.md](supabase/README.md) | Migraciones, datos de ejemplo, pruebas y cómo crear la base |
 | [docs/CLIENTE Y PROBLEMA (actualizado).docx](docs/) | Cliente, problema y alcance |
-| [docs/requerimientos_funcionales_app_citasFinal (actualizado).pdf](docs/) | Requerimientos RF-01 a RF-28 con criterios de aceptación |
+| [docs/requerimientos_funcionales_app_citasFinal (actualizado).pdf](docs/) | Requerimientos RF-01 a RF-30 con criterios de aceptación |
 | [docs/Proyecto_Final_Movil_II.docx](docs/) | Requisitos académicos del proyecto |
 | [docs/Datos_ejemplo_wireframes.md](docs/Datos_ejemplo_wireframes.md) | Datos de ejemplo y fórmula de franjas que usan las pantallas |
 

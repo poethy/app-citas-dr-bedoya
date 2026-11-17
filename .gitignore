@@ -38,3 +38,6 @@ Thumbs.db
 # Instaladores y binarios ajenos al proyecto
 *.exe
 *.msi
+
+# Configuración local del entorno de desarrollo
+.claude/launch.json

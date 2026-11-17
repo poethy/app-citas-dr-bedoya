@@ -2,7 +2,7 @@
 
 Qué lee y qué escribe cada pantalla del Figma («Flujo de usuario por rol») en la base de Supabase. Sirve para construir los servicios de `src/services/api/` y para revisar que ninguna pantalla pida un dato que la base no tiene.
 
-Se revisó contra los textos de las 58 pantallas de alta fidelidad el 17 de noviembre de 2026. Las consultas usan Axios contra `/rest/v1`; «RPC» es `POST /rest/v1/rpc/<función>`.
+Se revisó contra los textos de las 58 pantallas de alta fidelidad el 17 de noviembre de 2026. Las rutas están en `src/app/`. Las consultas usan Axios contra `/rest/v1`; «RPC» es `POST /rest/v1/rpc/<función>`.
 
 ## Paciente
 
@@ -10,7 +10,7 @@ Se revisó contra los textos de las 58 pantallas de alta fidelidad el 17 de novi
 
 | Pantalla | Ruta | Lee | Escribe / acción |
 | --- | --- | --- | --- |
-| A00 Splash | `app/index.tsx` | Sesión de supabase-js + `perfiles.rol` (su propio perfil) | Redirige con `replace` a P01 o O01 |
+| A00 Splash | `src/app/index.tsx` | Sesión de supabase-js + `perfiles.rol` (su propio perfil) | Redirige con `replace` a P01 o O01 |
 | A01 Bienvenida | `(auth)/bienvenida.tsx` | — | — |
 | A02 / A03 Iniciar sesión | `(auth)/login.tsx` | — | `supabase.auth.signInWithPassword`. Error → A03 «Correo o contraseña incorrectos» |
 | A04 / A05 Crear cuenta | `(auth)/registro.tsx` | — | `supabase.auth.signUp` con `options.data = { nombre, telefono }`. El trigger `nuevo_usuario` crea el perfil y la ficha de paciente (o la vincula si el teléfono ya existía). Correo repetido → A05 |
@@ -46,7 +46,7 @@ Se revisó contra los textos de las 58 pantallas de alta fidelidad el 17 de novi
 
 | Pantalla | Ruta | Lee | Escribe / acción |
 | --- | --- | --- | --- |
-| P01 Inicio | `(tabs)/index.tsx` | Próxima cita activa propia, conteo de próximas y pendientes, `perfiles.nombre` | — |
+| P01 Inicio | `(paciente)/(tabs)/inicio.tsx` | Próxima cita activa propia, conteo de próximas y pendientes, `perfiles.nombre` | — |
 | P02 Drawer | `(paciente)/_layout.tsx` | `perfiles.nombre`, `correo` | — |
 | P03 Notificaciones | `(paciente)/notificaciones.tsx` | `notificaciones` propias (tipos confirmada, rechazada, cancelada, reprogramada, cita_registrada). El tipo `recordatorio` no se lista aquí: llega como push y como aviso en P01 | `PATCH leida = true`. Tocar → `cita/[cita_id]` |
 | P04 Perfil | `(paciente)/perfil.tsx` | `perfiles` propio | `PATCH perfiles` (solo `nombre` y `telefono`; el trigger actualiza la ficha del paciente). El correo es de solo lectura |
@@ -57,7 +57,7 @@ Se revisó contra los textos de las 58 pantallas de alta fidelidad el 17 de novi
 
 | Pantalla | Ruta | Lee | Escribe / acción |
 | --- | --- | --- | --- |
-| O01 / O02 / O10 Agenda | `(odontologo)/(tabs)/index.tsx` | `citas` del día o la semana con `paciente:pacientes(nombre,telefono)` y `servicio:servicios(...)`, todas las de estado; `bloqueos` y `bloqueos_recurrentes`. Contadores por estado | — |
+| O01 / O02 / O10 Agenda | `(odontologo)/(tabs)/agenda.tsx` | `citas` del día o la semana con `paciente:pacientes(nombre,telefono)` y `servicio:servicios(...)`, todas las de estado; `bloqueos` y `bloqueos_recurrentes`. Contadores por estado | — |
 | O03 Drawer | `(odontologo)/_layout.tsx` | `perfiles.nombre` + `configuracion.lugar` | — |
 | O04 / O06 / O07 Solicitudes | `(tabs)/solicitudes.tsx` | Pendientes: `estado = pendiente`. Aprobadas: `estado = confirmada` y `respondida_en` no nulo. Rechazadas: `estado = rechazada` | RPC `responder_solicitud(id, aprobar)` |
 | O05 Detalle de solicitud | `solicitud/[id].tsx` | `citas?id=eq.{id}` con paciente (nombre, teléfono) y servicio | RPC `responder_solicitud` |

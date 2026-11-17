@@ -109,13 +109,13 @@ Estas decisiones ya están aplicadas en los documentos, en Figma y en la base; c
 - [ ] Armar la matriz requisito → función → pantalla → archivo → evidencia. Ya existe la base en [pantallas-y-datos.md](pantallas-y-datos.md).
 - [ ] Confirmar con el cliente los datos supuestos: horario (L–V 8:00 a. m.–6:00 p. m., sábado 8:00 a. m.–12:00 m.), almuerzo, 24 h de anticipación, servicios con duración y precio, y teléfono del consultorio.
 - [ ] Obtener las coordenadas exactas del consultorio y guardarlas en `configuracion`.
-- [ ] Crear el proyecto Expo con las primeras rutas navegables (el Hito 1 lo pide).
+- [x] Crear el proyecto Expo con las primeras rutas navegables (el Hito 1 lo pide). PR «Proyecto Expo SDK 58 con rutas, login y guardia de rol».
 
 **Desarrollo de la app (Hitos 2 y 3)**
 
-- [ ] Crear el proyecto Expo SDK 58 con TypeScript, NativeWind y Expo Router, siguiendo la estructura de rutas del flujo de navegación.
+- [x] Crear el proyecto Expo SDK 58 con TypeScript, NativeWind y Expo Router, siguiendo la estructura de rutas del flujo de navegación (rutas en `src/app/`; las pantallas sin construir dicen «en construcción»).
 - [ ] Pasar a código los componentes de alta fidelidad (botón, campo, tarjeta de cita, chip de estado, aviso, tabs) con props tipadas.
-- [ ] Autenticación con Supabase Auth (registro con nombre y teléfono en `options.data`) y guardia de rol en cada `_layout`.
+- [x] Autenticación con Supabase Auth (registro con nombre y teléfono en `options.data`) y guardia de rol en cada `_layout`. Falta probarla con las cuentas reales.
 - [ ] Cliente Axios, interfaces, mappers y hooks de TanStack Query (listado de citas y detalle por id, con carga, error y reintentar).
 - [ ] Estado compartido con Zustand y el hook `useFranjasDisponibles` con `calcularFranjas` (RF-28).
 - [ ] Mapa con OpenStreetMap + Leaflet en WebView y expo-location: permisos, centrar, pausar y reanudar, y liberar la suscripción (RF-20 a RF-27).
