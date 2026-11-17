@@ -476,6 +476,8 @@ Toda consulta muestra carga, error con «Reintentar», vacío y sin conexión, c
 
 ## 7. Notificaciones ⚠ D4
 
+> **Implementado (17/11/2026):** la base crea las notificaciones y la Edge Function `enviar-notificaciones` las manda por Expo Push cada minuto. Detalle en [supabase/README.md](../supabase/README.md#notificaciones-push-rf-11-rf-13-rf-16-rf-17). Sigue abierto si se usa un development build (D4).
+
 | Tipo | Cómo llega |
 | --- | --- |
 | Aviso en la app (P03, O11) | Siempre. Es la fuente principal y funciona en Expo Go |
