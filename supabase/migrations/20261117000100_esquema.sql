@@ -69,29 +69,35 @@ create table public.bloqueos (
   constraint bloqueos_sin_solapamiento exclude using gist (rango with &&)
 );
 
--- Una sola fila con las reglas y los datos del consultorio
+-- Una sola fila con las reglas y los datos del consultorio.
+-- Los pacientes la leen completa (P05, S06, S07, M03, mapa); por eso el nombre
+-- del profesional está aquí y no se lee de perfiles (que el paciente no ve).
 create table public.configuracion (
   id                         smallint primary key default 1 check (id = 1),
-  anticipacion_agendar_horas int not null default 24 check (anticipacion_agendar_horas between 0 and 72), -- RF-29
-  anticipacion_cambios_horas int not null default 24 check (anticipacion_cambios_horas between 0 and 72), -- RF-15
+  anticipacion_agendar_horas int not null default 24 check (anticipacion_agendar_horas between 1 and 72), -- RF-29, C04
+  anticipacion_cambios_horas int not null default 24 check (anticipacion_cambios_horas between 1 and 72), -- RF-15, C04
   recordatorio_horas_antes   int not null default 24 check (recordatorio_horas_antes > 0),               -- RF-16
-  hora_resumen_diario        time not null default '08:00',                                              -- RF-17
-  direccion                  text not null,
-  telefono                   text,
-  latitud                    double precision,
+  nombre_profesional         text not null,             -- P05: «Dr. Camilo Bedoya Orozco»
+  especialidad               text not null,             -- P05: «Odontología general»
+  lugar                      text not null,             -- P01, S06, M03: «Consultorio 201, Ed. Torcoroma»
+  direccion                  text not null,             -- S07, M03: «Calle 18 # 5-27, Pereira»
+  telefono                   text,                      -- M06: «Llamar al consultorio»
+  latitud                    double precision,          -- MP01: marcador del consultorio
   longitud                   double precision
 );
 
 -- Citas y solicitudes
 create table public.citas (
   id                        uuid primary key default gen_random_uuid(),
+  numero                    bigint generated always as identity (start with 1001) unique, -- M03: «Cita #A-1024»
   paciente_id               uuid not null references public.pacientes,
   servicio_id               uuid not null references public.servicios,
   inicio                    timestamptz not null,
   fin                       timestamptz not null,
   estado                    public.estado_cita not null,
   origen                    public.origen_cita not null default 'app',
-  creado_por                uuid references public.perfiles on delete set null,
+  creado_por                uuid references public.perfiles on delete set null,     -- O08: «Agendada por»
+  respondida_en             timestamptz,  -- cuándo el odontólogo aprobó o rechazó; O04 pestaña «Aprobadas»
   recordatorio_enviado_para timestamptz,
   creado_en                 timestamptz not null default now(),
   actualizado_en            timestamptz not null default now(),

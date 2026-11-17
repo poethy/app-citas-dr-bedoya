@@ -102,3 +102,25 @@ set role anon;
 select prueba.probar('anon no lee servicios', $$ select * from public.servicios $$, 'permission denied for table servicios');
 select prueba.probar('anon no llama RPC', $$ select public.disponibilidad_dia('2026-11-19') $$, 'permission denied for function disponibilidad_dia');
 reset role;
+
+-- ===== Datos que piden las pantallas del Figma =====
+set role authenticated;
+set request.jwt.claim.sub = '00000000-0000-0000-0000-0000000000a1';
+select prueba.probar('M03 número de cita «#A-»', $$ do $x$ begin if (select min(numero) from public.citas) < 1001 then raise exception 'numero'; end if; end $x$ $$);
+select 'M03 ejemplo: Cita #A-' || numero from public.citas order by numero limit 1;
+select prueba.probar('P05 el paciente lee el consultorio', $$ do $x$ begin if (select nombre_profesional || ' · ' || especialidad || ' · ' || lugar from public.configuracion) <> 'Dr. Camilo Bedoya Orozco · Odontología general · Consultorio 201, Ed. Torcoroma' then raise exception 'config'; end if; end $x$ $$);
+select prueba.probar('P05 el paciente lee el horario', $$ do $x$ begin if (select count(*) from public.horario_atencion) <> 6 then raise exception 'horario'; end if; end $x$ $$);
+select prueba.probar('RF-03 el paciente no ve el perfil del doctor', $$ do $x$ begin if (select count(*) from public.perfiles) <> 1 then raise exception 've otros perfiles'; end if; end $x$ $$);
+select prueba.probar('P04 cambiar nombre y teléfono', $$ update public.perfiles set nombre = 'Ana María Gómez', telefono = '310 555 9999' where id = auth.uid() $$);
+select 'P03 aviso: ' || titulo || ' — ' || cuerpo from public.notificaciones order by creado_en limit 1;
+reset role;
+select prueba.probar('P04 la ficha del paciente se actualiza', $$ do $x$ begin if not exists (select 1 from public.pacientes where nombre = 'Ana María Gómez' and telefono = '3105559999') then raise exception 'no sincronizó'; end if; end $x$ $$);
+
+set role authenticated;
+set request.jwt.claim.sub = '00000000-0000-0000-0000-0000000000d1';
+select prueba.probar('O04 pestaña Aprobadas (respondida_en)', $$ do $x$ begin if (select count(*) from public.citas where estado = 'confirmada' and respondida_en is not null) <> 0 then raise exception 'la reprogramada volvió a pendiente, no debería contar'; end if; end $x$ $$);
+select prueba.probar('O05 aprobar de nuevo la Resina reprogramada', $$ select public.responder_solicitud((select c.id from public.citas c join public.servicios s on s.id = c.servicio_id where s.nombre = 'Resina'), true) $$);
+select 'O04 Aprobadas: ' || count(*) from public.citas where estado = 'confirmada' and respondida_en is not null;
+select 'O08 agendada por: ' || c.origen || ' · ' || coalesce(pf.nombre, '—') from public.citas c left join public.perfiles pf on pf.id = c.creado_por where c.servicio_id = (select id from public.servicios where nombre = 'Resina');
+select 'O11 aviso: ' || titulo || ' — ' || replace(cuerpo, E'\n', ' / ') from public.notificaciones where tipo in ('reprogramada', 'resumen_dia') order by creado_en;
+reset role;

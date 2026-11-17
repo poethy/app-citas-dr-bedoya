@@ -74,14 +74,16 @@ horario_atencion   bloqueos_recurrentes   bloqueos   configuracion (1 fila)
 | `horario_atencion` | Horario por día de la semana | `dia_semana` (0 = domingo), `hora_inicio`, `hora_fin` |
 | `bloqueos_recurrentes` | Bloqueos que se repiten, como el almuerzo | `dia_semana`, `hora_inicio`, `hora_fin`, `motivo` |
 | `bloqueos` | Bloqueos puntuales (RF-19) | `rango` (`tstzrange`), `motivo` |
-| `configuracion` | Una sola fila con reglas y datos del consultorio | `anticipacion_agendar_horas`, `anticipacion_cambios_horas` (RF-15), `recordatorio_horas_antes`, `direccion`, `telefono`, `latitud`, `longitud` |
-| `citas` | Citas y solicitudes | `paciente_id`, `servicio_id`, `inicio`, `fin`, `estado`, `origen` (`app`/`consultorio`), `recordatorio_enviado_para` |
+| `configuracion` | Una sola fila con reglas y datos del consultorio | `anticipacion_agendar_horas` (RF-29), `anticipacion_cambios_horas` (RF-15), `recordatorio_horas_antes`, `nombre_profesional`, `especialidad`, `lugar`, `direccion`, `telefono`, `latitud`, `longitud` |
+| `citas` | Citas y solicitudes | `numero` (para «Cita #A-1024»), `paciente_id`, `servicio_id`, `inicio`, `fin`, `estado`, `origen` (`app`/`consultorio`), `creado_por`, `respondida_en` (pestaña «Aprobadas» de O04), `recordatorio_enviado_para` |
 | `notificaciones` | Avisos de P03 y O11, que también alimentan los push (RF-11, RF-13, RF-16, RF-17) | `destinatario_id`, `cita_id`, `tipo`, `titulo`, `cuerpo`, `leida`, `enviada_push` |
 | `tokens_push` | Token de Expo Push de cada dispositivo | `perfil_id`, `token` |
 
 Estados de una cita: `pendiente` → `confirmada` o `rechazada`; `pendiente` o `confirmada` → `cancelada`. Una cita **ocupa su franja** mientras está `pendiente` o `confirmada` (RF-09, escenario 1).
 
 ### 3.3 Esquema SQL inicial
+
+> **El esquema vigente está en [supabase/migrations/](../supabase/migrations/)** y se prueba con `supabase/pruebas`. El bloque de abajo es el borrador original; al revisar el Figma se agregaron `citas.numero`, `citas.respondida_en` y los datos del consultorio en `configuracion` (ver [pantallas-y-datos.md](pantallas-y-datos.md)).
 
 Va en `supabase/migrations/0001_esquema.sql`. Las funciones y políticas van en migraciones aparte (sección 4).
 

@@ -10,11 +10,12 @@
 -- =====================================================================
 
 insert into public.configuracion (id, anticipacion_agendar_horas, anticipacion_cambios_horas, recordatorio_horas_antes,
-                                  hora_resumen_diario, direccion, telefono, latitud, longitud)
-values (1, 24, 24, 24, '08:00',
-        'Calle 18 # 5-27, Edificio Torcoroma, Consultorio 201, Pereira',
-        null,   -- teléfono del consultorio: por confirmar
-        null, null) -- coordenadas: por confirmar
+                                  nombre_profesional, especialidad, lugar, direccion, telefono, latitud, longitud)
+values (1, 24, 24, 24,
+        'Dr. Camilo Bedoya Orozco', 'Odontología general',
+        'Consultorio 201, Ed. Torcoroma', 'Calle 18 # 5-27, Pereira',
+        null,       -- teléfono del consultorio: por confirmar con el cliente
+        null, null) -- coordenadas exactas: por confirmar con el cliente
 on conflict (id) do nothing;
 
 -- Lunes (1) a viernes (5): 8:00 a. m. – 6:00 p. m.; sábado (6): 8:00 a. m. – 12:00 m.; domingo cerrado

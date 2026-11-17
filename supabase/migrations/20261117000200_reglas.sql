@@ -113,9 +113,28 @@ create trigger bloqueos_validar
 -- Avisos (tabla notificaciones) al crear o cambiar una cita
 -- ---------------------------------------------------------------------
 
+-- Hora en el formato de las pantallas: «11:00 a. m.», «1:30 p. m.», «12:00 m.»
+create or replace function public.hora_es(p_ts timestamptz)
+returns text language sql stable as $$
+  select case
+    when to_char(p_ts at time zone zona_consultorio(), 'HH24:MI') = '12:00' then '12:00 m.'
+    else ltrim(to_char(p_ts at time zone zona_consultorio(), 'HH12:MI'), '0')
+         || case when extract(hour from p_ts at time zone zona_consultorio()) < 12 then ' a. m.' else ' p. m.' end
+  end;
+$$;
+
+-- Fecha corta como en P03 y O11: «Jue 19 nov, 11:00 a. m.» (sin depender del idioma del servidor)
+create or replace function public.fecha_corta_es(p_ts timestamptz)
+returns text language sql stable as $$
+  select (array['Dom','Lun','Mar','Mié','Jue','Vie','Sáb'])[extract(dow from p_ts at time zone zona_consultorio())::int + 1]
+         || ' ' || extract(day from p_ts at time zone zona_consultorio())::int
+         || ' ' || (array['ene','feb','mar','abr','may','jun','jul','ago','sep','oct','nov','dic'])[extract(month from p_ts at time zone zona_consultorio())::int]
+         || ', ' || hora_es(p_ts);
+$$;
+
 create or replace function public.texto_cita(p_cita public.citas)
 returns text language sql stable security definer set search_path = public as $$
-  select s.nombre || ' · ' || to_char(p_cita.inicio at time zone zona_consultorio(), 'DD/MM/YYYY HH12:MI AM')
+  select s.nombre || ' · ' || fecha_corta_es(p_cita.inicio)
   from servicios s where s.id = p_cita.servicio_id;
 $$;
 
@@ -209,6 +228,20 @@ end $$;
 create trigger nuevo_usuario
   after insert on auth.users
   for each row execute function public.trg_nuevo_usuario();
+
+-- P04: si el paciente cambia su nombre o teléfono, la ficha que ve el odontólogo también cambia
+create or replace function public.trg_perfil_sincronizar()
+returns trigger language plpgsql security definer set search_path = public as $$
+begin
+  if new.nombre is distinct from old.nombre or new.telefono is distinct from old.telefono then
+    update pacientes set nombre = new.nombre, telefono = solo_digitos(new.telefono) where perfil_id = new.id;
+  end if;
+  return new;
+end $$;
+
+create trigger perfil_sincronizar
+  after update on public.perfiles
+  for each row execute function public.trg_perfil_sincronizar();
 
 -- ---------------------------------------------------------------------
 -- RPC · Disponibilidad de un día (entrada del cálculo de franjas en la app)
@@ -350,6 +383,8 @@ begin
       fin    = p_nuevo_inicio + make_interval(mins => v_servicio.duracion_min),
       estado = case when v_odo or v_servicio.confirmacion = 'inmediata' then 'confirmada'::estado_cita
                     else 'pendiente'::estado_cita end,
+      -- si vuelve a quedar pendiente, sale de «Aprobadas» (O04) hasta que el odontólogo responda otra vez
+      respondida_en = case when v_odo or v_servicio.confirmacion = 'inmediata' then respondida_en end,
       recordatorio_enviado_para = null
     where id = p_cita_id
     returning * into v_cita;
@@ -372,7 +407,8 @@ begin
   select * into v_cita from citas where id = p_cita_id for update;
   if not found then perform lanzar('CITA_NO_EXISTE'); end if;
   if v_cita.estado <> 'pendiente' then perform lanzar('ESTADO_INVALIDO'); end if;
-  update citas set estado = case when p_aprobar then 'confirmada'::estado_cita else 'rechazada'::estado_cita end
+  update citas set estado = case when p_aprobar then 'confirmada'::estado_cita else 'rechazada'::estado_cita end,
+                   respondida_en = now()
   where id = p_cita_id returning * into v_cita;
   return v_cita;
 end $$;
@@ -461,22 +497,33 @@ begin
   return v_total;
 end $$;
 
+-- O11: «RESUMEN DEL DÍA · JUEVES 19 — 4 citas confirmadas y 1 pendiente · Primera cita 8:00 a. m. · Carlos Ruiz»
 create or replace function public.generar_resumen_diario()
 returns int language plpgsql security definer set search_path = public as $$
 declare
-  v_hoy    date := (now() at time zone zona_consultorio())::date;
-  v_cuerpo text;
-  v_total  int;
+  v_ahora       timestamp := now() at time zone zona_consultorio();
+  v_hoy         date := v_ahora::date;
+  v_dias        text[] := array['domingo','lunes','martes','miércoles','jueves','viernes','sábado'];
+  v_confirmadas int;
+  v_pendientes  int;
+  v_primera     text;
+  v_lista       text;
 begin
-  select count(*), string_agg(to_char(c.inicio at time zone zona_consultorio(), 'HH12:MI AM') || ' · ' || p.nombre || ' · ' || s.nombre, E'\n' order by c.inicio)
-  into v_total, v_cuerpo
+  select count(*) filter (where c.estado = 'confirmada'),
+         count(*) filter (where c.estado = 'pendiente'),
+         (array_agg(hora_es(c.inicio) || ' · ' || p.nombre order by c.inicio) filter (where c.estado = 'confirmada'))[1],
+         string_agg(hora_es(c.inicio) || ' · ' || p.nombre || ' · ' || s.nombre, E'\n' order by c.inicio) filter (where c.estado = 'confirmada')
+    into v_confirmadas, v_pendientes, v_primera, v_lista
   from citas c join pacientes p on p.id = c.paciente_id join servicios s on s.id = c.servicio_id
-  where c.estado = 'confirmada' and (c.inicio at time zone zona_consultorio())::date = v_hoy;
+  where c.estado in ('confirmada', 'pendiente') and (c.inicio at time zone zona_consultorio())::date = v_hoy;
 
   insert into notificaciones (destinatario_id, tipo, titulo, cuerpo)
   select pf.id, 'resumen_dia',
-         'Citas de hoy: ' || v_total,
-         coalesce(v_cuerpo, 'No hay citas confirmadas para hoy.')
+         'Resumen del día · ' || v_dias[extract(dow from v_hoy)::int + 1] || ' ' || extract(day from v_hoy)::int,
+         v_confirmadas || case when v_confirmadas = 1 then ' cita confirmada' else ' citas confirmadas' end
+           || ' y ' || v_pendientes || case when v_pendientes = 1 then ' pendiente' else ' pendientes' end
+           || coalesce(E'\nPrimera cita ' || v_primera, '')
+           || coalesce(E'\n\n' || v_lista, '')
   from perfiles pf where pf.rol = 'odontologo';
-  return v_total;
+  return v_confirmadas;
 end $$;
