@@ -40,7 +40,7 @@ PostgreSQL de Supabase con las tablas, reglas y seguridad de la app. El diseño 
 
 ## Probar las reglas sin Supabase
 
-`pruebas/` corre las migraciones y el seed en un PostgreSQL real dentro de Node ([PGlite](https://pglite.dev)), sin Docker ni cuenta, y revisa 37 casos: agendar, choques (RF-06), almuerzo, horario, anticipación (RF-29), cancelación fuera de plazo (RF-12), aprobación (RF-09), bloqueos (RF-19), registro desde el consultorio (RF-07), permisos por rol (RF-03), avisos, recordatorios y los datos que piden las pantallas (número de cita, consultorio, perfil, pestaña Aprobadas).
+`pruebas/` corre las migraciones y el seed en un PostgreSQL real dentro de Node ([PGlite](https://pglite.dev)), sin Docker ni cuenta, y revisa 36 casos: agendar, choques (RF-06), almuerzo, horario, anticipación (RF-29), cancelación fuera de plazo (RF-12), aprobación (RF-09), bloqueos (RF-19), registro desde el consultorio (RF-07), permisos por rol (RF-03), avisos, recordatorios y los datos que piden las pantallas (número de cita, consultorio, perfil, pestaña Aprobadas).
 
 ```bash
 cd supabase/pruebas && npm install && npm test
