@@ -1,0 +1,12 @@
+{
+  "name": "pruebas-base-de-datos",
+  "private": true,
+  "type": "module",
+  "description": "Corre las migraciones y el seed en PGlite y revisa las reglas de negocio",
+  "scripts": {
+    "test": "node correr.mjs"
+  },
+  "devDependencies": {
+    "@electric-sql/pglite": "^0.3.0"
+  }
+}
