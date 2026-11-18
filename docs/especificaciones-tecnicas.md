@@ -426,9 +426,9 @@ Todas las RPC verifican autenticación, rol, propiedad y parámetros; fijan un s
 | `responder_solicitud(cita_id, aprobar)` | Solo doctor, solo pendiente y `ahora < inicio`. Con `ahora >= inicio`, persistir vencida y devolver `SOLICITUD_VENCIDA` sin aprobar. Rechazar y aprobar generan estados y avisos diferentes. |
 | `vencer_solicitudes()` | Operación interna idempotente: pendientes con `inicio <= ahora` pasan a vencida. Aviso asociado una sola vez; no modifica citas confirmadas. |
 | `crear_bloqueo(inicio, fin, motivo)` | Solo doctor. Rechaza cruce con citas activas y otros bloqueos, dentro de la transacción común de ocupación. |
-| `actualizar_horario(dias, almuerzo)` | Solo doctor. Reemplaza en una transacción las filas de `horario_atencion` (un día sin fila queda cerrado) y los bloqueos recurrentes con motivo «Almuerzo». Rechaza con `CITAS_FUERA_DE_HORARIO` si una cita pendiente o confirmada futura queda fuera del nuevo horario o cruza el almuerzo. Usa la misma transacción común de ocupación. **Pendiente:** migración nueva (B9). |
+| `actualizar_horario(dias, almuerzo)` | Solo doctor. Reemplaza en una transacción las filas de `horario_atencion` (un día sin fila queda cerrado) y los bloqueos recurrentes con motivo «Almuerzo». Rechaza con `CITAS_FUERA_DE_HORARIO` si una cita pendiente o confirmada futura queda fuera del nuevo horario o cruza el almuerzo. Bloquea la tabla de citas mientras revisa. Valida que cada cierre sea posterior a su apertura y que no haya días repetidos (`HORARIO_INVALIDO`). Migración `…_actualizar_horario.sql`. |
 
-El error SOLICITUD_VENCIDA debe comunicarse sin deshacer la escritura del vencimiento: devolver un resultado de negocio, o resolver el vencimiento en una transacción independiente antes del error. No actualizar a vencida y luego lanzar una excepción que revierta ese cambio.
+El error SOLICITUD_VENCIDA debe comunicarse sin deshacer la escritura del vencimiento: devolver un resultado de negocio, o resolver el vencimiento en una transacción independiente antes del error. No actualizar a vencida y luego lanzar una excepción que revierta ese cambio. **Implementado así:** `responder_solicitud` guarda la cita como vencida y la devuelve sin lanzar error; la app ve `estado = 'vencida'` y muestra el mensaje de `SOLICITUD_VENCIDA`. `cancelar_cita` y `reprogramar_cita` responden `ESTADO_INVALIDO` si la cita ya empezó o venció. `vencer_solicitudes()` corre cada minuto con pg_cron.
 
 Los triggers de citas crean avisos según transición y actualizan actualizado_en. En registro, el perfil público siempre es paciente. La creación inicial del doctor es administrativa. La vinculación de un paciente sin cuenta por teléfono sigue siendo propuesta pendiente de definir y verificar; no atribuir citas a una cuenta solo por un número no verificado.
 
@@ -462,7 +462,7 @@ El backend existente usa el resumen a las 8:00 a. m. de Bogotá y Expo Push; la 
 
 supabase-js se usa **solo para Auth**: registro, login, logout, sesión y escucha de cambios. Todos los datos pasan por Axios.
 
-**Estado actual:** el cliente, la traducción de errores (`src/services/http/errores.ts`, con `ErrorApi` que hereda de `ErrorNegocio`), Auth (`src/services/remoto/auth.remoto.ts`) y las consultas de perfil, servicios y configuración (`src/services/remoto/datos.remoto.ts`) ya existen y tienen pruebas, pero las pantallas siguen usando el servicio simulado. Las citas remotas se agregan cuando la base tenga `precio_acordado_cop`, `duracion_acordada_min` y el estado `vencida`; después se cambia el proveedor simulado por el remoto (B8).
+**Estado actual:** el cliente, la traducción de errores (`src/services/http/errores.ts`, con `ErrorApi` que hereda de `ErrorNegocio`), Auth (`src/services/remoto/auth.remoto.ts`) y las consultas de perfil, servicios y configuración (`src/services/remoto/datos.remoto.ts`) ya existen y tienen pruebas, pero las pantallas siguen usando el servicio simulado. Las migraciones con `precio_acordado_cop`, `duracion_acordada_min` y el estado `vencida` ya están en `supabase/migrations/`; las citas remotas se agregan cuando se apliquen en Supabase, y después se cambia el proveedor simulado por el remoto (B8).
 
 #### B6.2 Endpoints
 
@@ -502,6 +502,7 @@ supabase-js se usa **solo para Auth**: registro, login, logout, sesión y escuch
 | `FUERA_DE_PLAZO` | `cancelar_cita` / `reprogramar_cita` | «No se cumple la anticipación de {horas} h. Llama al consultorio para solicitar una excepción.» | M06 |
 | `CHOQUE_CON_CITA` | `crear_bloqueo` | «Hay una cita en esa franja. Cancélala o reprográmala primero.» | C06 |
 | `FUERA_DE_HORARIO` | RPC | «Ese horario está fuera de la atención del consultorio.» | — |
+| `HORARIO_INVALIDO` | `actualizar_horario` | «La hora de cierre debe ser posterior a la de apertura.» | C09 |
 | `CITAS_FUERA_DE_HORARIO` | `actualizar_horario` | «Hay citas que quedarían fuera del nuevo horario. Cancélalas o reprográmalas antes de guardar.» La hoja nombra la primera cita afectada | C10 |
 | `FUERA_DE_ANTICIPACION` | `solicitar_cita` | «Las citas se agendan con al menos {horas} h de anticipación.» | S03 |
 | `NO_AUTORIZADO` | RLS / RPC | Pantalla de acceso denegado | G04 |
@@ -557,7 +558,8 @@ El frontend entrega modelos, interfaces de respuesta, mappers, firmas de servici
 ### B9 Pendientes que no cambian las decisiones cerradas
 
 - Confirmar horario, almuerzo, servicios, precios, teléfono y coordenadas reales del consultorio.
-- C08 Horario de atención: confirmar con el equipo que un cambio de horario se rechaza si deja citas activas fuera (C10, igual que C06) y crear la RPC `actualizar_horario` en una migración nueva. Las tablas `horario_atencion` y `bloqueos_recurrentes` ya existen.
+- C08 Horario de atención: confirmar con el equipo que un cambio de horario se rechaza si deja citas activas fuera (C10, igual que C06). La RPC `actualizar_horario` ya está en una migración, pendiente de aplicar en Supabase.
+- Aplicar en Supabase las migraciones del 18 de noviembre (vencida, precio y duración acordados, cron de vencimiento y `actualizar_horario`) y después conectar las citas remotas en la app.
 - Contrastar con el backend existente los recordatorios cada 15 minutos, el resumen diario a las 8:00 a. m. de Bogotá y el envío por Expo Push; registrar tokens y probar un development build de Android.
 - Definir vinculación segura de pacientes que llamaron y después crean cuenta; la propuesta original usaba teléfono, pero requiere verificación.
 - Definir si una reprogramación hecha por el doctor de un servicio con aprobación confirma directamente o conserva el estado previo. Lo acordado de confirmación directa cubre citas nuevas registradas por él; el paciente sí reaplica la regla del servicio.
