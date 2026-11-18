@@ -25,14 +25,11 @@ export default function Consultorio() {
         <ResumenCita
           filas={[
             ['pin', 'Dirección', 'Calle 18 # 5-27, Ed. Torcoroma, Consultorio 201, Pereira'],
-            ['clock', 'Lunes a viernes', '8:00 a. m. – 6:00 p. m. · almuerzo 12:30 – 1:30 p. m.'],
+            ['clock', 'Lunes a viernes', '8:00 a. m. – 6:00 p. m.'],
             ['calendar', 'Sábado', '8:00 a. m. – 12:00 m.'],
           ]}
         />
       </Tarjeta>
-      <Texto className="text-xs text-muted">
-        Horario de ejemplo. Teléfono y coordenadas exactas pendientes de confirmar.
-      </Texto>
     </Pantalla>
   );
 }
