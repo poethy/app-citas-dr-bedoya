@@ -1,6 +1,6 @@
 # Especificaciones técnicas de App Citas Dr Camilo Bedoya
 
-Versión 2.0 · 17 de noviembre de 2026 · Decisiones de negocio acordadas.
+Versión 2.1 · 17 de noviembre de 2026 · Decisiones de negocio acordadas.
 
 El documento separa el trabajo del frontend del trabajo del backend. El frontend de esta entrega usa datos simulados persistentes. El equipo ya incorporó un backend de Supabase desde main, documentado en `supabase/README.md`; esta entrega lo conserva sin modificar ni aplicar migraciones. La Parte II reúne su contrato y los ajustes acordados que deben contrastarse antes de integrar ambos trabajos. Los ejemplos SQL de este documento no reemplazan las migraciones vigentes.
 
@@ -25,10 +25,11 @@ SDK 58 es una exigencia del proyecto; antes de instalar se comprobará su dispon
 - Cada cita conserva el precio en COP y la duración acordados al crearla. Editar el catálogo afecta citas nuevas, sin recalcular las existentes. Reprogramar conserva esos valores; el nuevo fin se calcula con la duración guardada.
 - La disponibilidad se calcula por tramos libres de una fecha concreta, sin sumar huecos separados para encajar una cita. Los mensajes muestran la anticipación configurada, no un texto fijo de 24 horas.
 - La información del consultorio continúa siendo de solo lectura. El catálogo permite configurar nombre, precio, duración y tipo de confirmación.
+- El odontólogo configura el horario de atención en C08: qué días abre, la hora de apertura y de cierre de cada día, y el almuerzo. El cierre debe ser posterior a la apertura (C09). Cambiar el horario no mueve ninguna cita; si una cita pendiente o confirmada futura quedaría fuera del nuevo horario o cruzaría el almuerzo, no se guarda y se muestra C10 (propuesta por confirmar, ver B9).
 
 ### F2.1 Servicio mock y persistencia de la demo
 
-- Simular registro, login, roles, consultas, citas, solicitudes, bloqueos, catálogo, configuración y avisos. La cuenta demo del odontólogo se entrega preparada; el registro público crea pacientes.
+- Simular registro, login, roles, consultas, citas, solicitudes, bloqueos, catálogo, configuración, horario de atención y avisos. La cuenta demo del odontólogo se entrega preparada; el registro público crea pacientes.
 - Guardar los cambios durante cada operación y esperar a que termine la escritura antes de anunciar éxito. No esperar al cierre de la app para persistir. Al abrir, hidratar antes de redirigir desde A00.
 - Un paciente puede solicitar una cita, cerrar sesión, entrar como doctor en el mismo teléfono, aprobarla y volver como paciente para ver el resultado. No hay sincronización entre teléfonos ni autenticación real.
 - Reutilizar datos guardados al reiniciar; cargar ejemplos solo si no existe almacenamiento. Un fallo al leer o escribir muestra error y permite reintentar, sin reemplazar silenciosamente los datos.
@@ -96,6 +97,7 @@ src/app/
     servicios/[id].tsx            C02 / C03
     anticipacion.tsx              C04
     bloqueos.tsx                  C05 / C06 / C07
+    horario.tsx                   C08 / C09 / C10
   cita/[id]/index.tsx             M03 / O08 / M04 (vista según el rol; modal M05; estado M06)
   cita/[id]/reprogramar.tsx       M07 → M08
   solicitud/[id].tsx              O05
@@ -398,7 +400,7 @@ Una función auxiliar `es_odontologo()` (`security definer`) consulta el rol del
 | `perfiles` | Lee y edita solo el suyo | Lee todos |
 | `pacientes` | Lee solo su fila (`perfil_id = auth.uid()`) | Todo |
 | `citas` | **Solo lectura** de sus citas. Crear, cancelar y reprogramar se hace solo con las funciones de B4 | Lectura autorizada; mutaciones solo a través de las funciones |
-| `servicios`, `horario_atencion`, `bloqueos_recurrentes`, `configuracion` | Lectura | Lectura; catálogo y anticipaciones se editan por operaciones autorizadas |
+| `servicios`, `horario_atencion`, `bloqueos_recurrentes`, `configuracion` | Lectura | Lectura; catálogo, anticipaciones y horario de atención se editan por operaciones autorizadas |
 | `bloqueos` | No lee la tabla; ve la ocupación con `disponibilidad_dia` | Lectura; creación solo por RPC y eliminación autorizada |
 | `notificaciones` | Solo las suyas; puede marcarlas como leídas | Solo las suyas |
 | `tokens_push` | Solo los suyos | Solo los suyos |
@@ -424,6 +426,7 @@ Todas las RPC verifican autenticación, rol, propiedad y parámetros; fijan un s
 | `responder_solicitud(cita_id, aprobar)` | Solo doctor, solo pendiente y `ahora < inicio`. Con `ahora >= inicio`, persistir vencida y devolver `SOLICITUD_VENCIDA` sin aprobar. Rechazar y aprobar generan estados y avisos diferentes. |
 | `vencer_solicitudes()` | Operación interna idempotente: pendientes con `inicio <= ahora` pasan a vencida. Aviso asociado una sola vez; no modifica citas confirmadas. |
 | `crear_bloqueo(inicio, fin, motivo)` | Solo doctor. Rechaza cruce con citas activas y otros bloqueos, dentro de la transacción común de ocupación. |
+| `actualizar_horario(dias, almuerzo)` | Solo doctor. Reemplaza en una transacción las filas de `horario_atencion` (un día sin fila queda cerrado) y los bloqueos recurrentes con motivo «Almuerzo». Rechaza con `CITAS_FUERA_DE_HORARIO` si una cita pendiente o confirmada futura queda fuera del nuevo horario o cruza el almuerzo. Usa la misma transacción común de ocupación. **Pendiente:** migración nueva (B9). |
 
 El error SOLICITUD_VENCIDA debe comunicarse sin deshacer la escritura del vencimiento: devolver un resultado de negocio, o resolver el vencimiento en una transacción independiente antes del error. No actualizar a vencida y luego lanzar una excepción que revierta ese cambio.
 
@@ -477,6 +480,7 @@ supabase-js se usa **solo para Auth**: registro, login, logout, sesión y escuch
 | Registrar cita (consultorio) | `POST /rpc/registrar_cita_consultorio` | O09 |
 | Bloqueos | `GET /bloqueos?rango=ov...`, `POST /rpc/crear_bloqueo`, `DELETE /bloqueos?id=eq.{id}` | C05 |
 | Configuración y consultorio | `GET /configuracion`, `PATCH /configuracion?id=eq.1` (C04 edita las dos anticipaciones) | C04, P05, MP01 |
+| Horario de atención | `GET /horario_atencion?order=dia_semana`, `GET /bloqueos_recurrentes?motivo=eq.Almuerzo`, `POST /rpc/actualizar_horario` | C08, C09, C10, P05 |
 | Notificaciones | `GET /notificaciones?order=creado_en.desc`, `PATCH /notificaciones?id=eq.{id}` | P03, O11 |
 | Perfil | `GET` y `PATCH /perfiles?id=eq.{uid}` | P04 |
 | Token push | `POST /tokens_push` (con `Prefer: resolution=merge-duplicates`) | Al iniciar sesión |
@@ -496,6 +500,7 @@ supabase-js se usa **solo para Auth**: registro, login, logout, sesión y escuch
 | `FUERA_DE_PLAZO` | `cancelar_cita` / `reprogramar_cita` | «No se cumple la anticipación de {horas} h. Llama al consultorio para solicitar una excepción.» | M06 |
 | `CHOQUE_CON_CITA` | `crear_bloqueo` | «Hay una cita en esa franja. Cancélala o reprográmala primero.» | C06 |
 | `FUERA_DE_HORARIO` | RPC | «Ese horario está fuera de la atención del consultorio.» | — |
+| `CITAS_FUERA_DE_HORARIO` | `actualizar_horario` | «Hay citas que quedarían fuera del nuevo horario. Cancélalas o reprográmalas antes de guardar.» La hoja nombra la primera cita afectada | C10 |
 | `FUERA_DE_ANTICIPACION` | `solicitar_cita` | «Las citas se agendan con al menos {horas} h de anticipación.» | S03 |
 | `NO_AUTORIZADO` | RLS / RPC | Pantalla de acceso denegado | G04 |
 | `SIN_CONEXION` | Axios sin respuesta | «Sin conexión. Revisa tu internet e intenta de nuevo.» | G02 |
@@ -550,6 +555,7 @@ El frontend entrega modelos, interfaces de respuesta, mappers, firmas de servici
 ### B9 Pendientes que no cambian las decisiones cerradas
 
 - Confirmar horario, almuerzo, servicios, precios, teléfono y coordenadas reales del consultorio.
+- C08 Horario de atención: confirmar con el equipo que un cambio de horario se rechaza si deja citas activas fuera (C10, igual que C06) y crear la RPC `actualizar_horario` en una migración nueva. Las tablas `horario_atencion` y `bloqueos_recurrentes` ya existen.
 - Contrastar con el backend existente los recordatorios cada 15 minutos, el resumen diario a las 8:00 a. m. de Bogotá y el envío por Expo Push; registrar tokens y probar un development build de Android.
 - Definir vinculación segura de pacientes que llamaron y después crean cuenta; la propuesta original usaba teléfono, pero requiere verificación.
 - Definir si una reprogramación hecha por el doctor de un servicio con aprobación confirma directamente o conserva el estado previo. Lo acordado de confirmación directa cubre citas nuevas registradas por él; el paciente sí reaplica la regla del servicio.
