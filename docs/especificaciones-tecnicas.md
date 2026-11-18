@@ -462,6 +462,8 @@ El backend existente usa el resumen a las 8:00 a. m. de Bogotá y Expo Push; la 
 
 supabase-js se usa **solo para Auth**: registro, login, logout, sesión y escucha de cambios. Todos los datos pasan por Axios.
 
+**Estado actual:** el cliente, la traducción de errores (`src/services/http/errores.ts`, con `ErrorApi` que hereda de `ErrorNegocio`), Auth (`src/services/remoto/auth.remoto.ts`) y las consultas de perfil, servicios y configuración (`src/services/remoto/datos.remoto.ts`) ya existen y tienen pruebas, pero las pantallas siguen usando el servicio simulado. Las citas remotas se agregan cuando la base tenga `precio_acordado_cop`, `duracion_acordada_min` y el estado `vencida`; después se cambia el proveedor simulado por el remoto (B8).
+
 #### B6.2 Endpoints
 
 | Uso | Método y ruta | Pantallas |
