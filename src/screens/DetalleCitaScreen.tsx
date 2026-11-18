@@ -77,7 +77,7 @@ export default function DetalleCitaScreen({ solicitud = false }: { solicitud?: b
   async function decidir(aprobar: boolean) {
     try {
       await responder.mutateAsync(aprobar);
-      router.replace('/(odontologo)/(tabs)/solicitudes');
+      router.replace('/(odontologo)/(principal)/(tabs)/solicitudes');
     } catch {}
   }
   return (

@@ -25,7 +25,7 @@ export default function Agenda() {
       headerRight={
         <Pressable
           accessibilityLabel="Avisos"
-          onPress={() => router.push('/(odontologo)/(tabs)/avisos')}
+          onPress={() => router.push('/(odontologo)/(principal)/(tabs)/avisos')}
           className="p-3"
         >
           <Icono nombre="bellLight" />

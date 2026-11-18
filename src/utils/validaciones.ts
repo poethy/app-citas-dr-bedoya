@@ -12,13 +12,11 @@ export const registroSchema = perfilSchema.extend({
     .regex(/\d/, 'Incluye un número.'),
 });
 
+export const MAX_CARACTERES_TELEFONO_CITA = 10;
+
 export const pacienteNuevaCitaSchema = z.object({
   nombre: z.string().trim().min(1, 'Escribe el nombre del paciente.'),
-  telefono: z.preprocess(
-    (valor) =>
-      typeof valor === 'string' ? valor.replace(/[\s().-]/g, '').replace(/^\+57/, '') : valor,
-    perfilSchema.shape.telefono,
-  ),
+  telefono: z.string().max(MAX_CARACTERES_TELEFONO_CITA, 'Usa hasta 10 caracteres.'),
 });
 
 export function validarNumero(valor: string, tipo: 'precio' | 'duracion'): string | null {

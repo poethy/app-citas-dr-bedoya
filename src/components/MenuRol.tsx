@@ -111,13 +111,6 @@ export default function MenuRol({ rol }: { rol: Rol }) {
       {rol === 'paciente' && (
         <Drawer.Screen name="notificaciones" options={{ title: 'Notificaciones' }} />
       )}
-      {rol === 'odontologo' && <Drawer.Screen name="servicios" options={{ title: 'Servicios' }} />}
-      {rol === 'odontologo' && (
-        <Drawer.Screen name="anticipacion" options={{ title: 'Anticipación mínima' }} />
-      )}
-      {rol === 'odontologo' && (
-        <Drawer.Screen name="bloqueos" options={{ title: 'Bloquear horarios' }} />
-      )}
     </Drawer>
   );
 }

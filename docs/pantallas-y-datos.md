@@ -57,7 +57,7 @@ Se revisó contra los textos de las 58 pantallas de alta fidelidad el 17 de novi
 
 | Pantalla | Ruta | Lee | Escribe / acción |
 | --- | --- | --- | --- |
-| O01 / O02 / O10 Agenda | `(odontologo)/(tabs)/index.tsx` | `citas` del día o la semana con `paciente:pacientes(nombre,telefono)` y `servicio:servicios(...)`, todas las de estado; `bloqueos` y `bloqueos_recurrentes`. Contadores por estado | — |
+| O01 / O02 / O10 Agenda | `(odontologo)/(principal)/(tabs)/index.tsx` | `citas` del día o la semana con `paciente:pacientes(nombre,telefono)` y `servicio:servicios(...)`, todas las de estado; `bloqueos` y `bloqueos_recurrentes`. Contadores por estado | — |
 | O03 Drawer | `(odontologo)/_layout.tsx` | `perfiles.nombre` + `configuracion.lugar` | — |
 | O04 / O06 / O07 Solicitudes | `(tabs)/solicitudes.tsx` | Pendientes: `estado = pendiente`. Aprobadas: `estado = confirmada` y `respondida_en` no nulo. Rechazadas: `estado = rechazada` | RPC `responder_solicitud(id, aprobar)` |
 | O05 Detalle de solicitud | `solicitud/[id].tsx` | `citas?id=eq.{id}` con paciente (nombre, teléfono) y servicio | RPC `responder_solicitud` |

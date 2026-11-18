@@ -64,34 +64,31 @@ describe('Repositorio persistente', () => {
     expect(results.filter((x) => x.status === 'fulfilled')).toHaveLength(1);
     expect(results.filter((x) => x.status === 'rejected')).toHaveLength(1);
   });
-  it('registra como odontólogo una cita con celular pegado en formato internacional', async () => {
-    const r = await repo();
-    const datos = await r.consultar();
-    const ana = datos.perfiles.find((p) => p.id === 'ana')!;
-    const telefonoPegado = `+57 (${ana.telefono.slice(0, 3)}) ${ana.telefono.slice(3, 6)}-${ana.telefono.slice(6)}`;
-    const paciente = pacienteNuevaCitaSchema.parse({
-      nombre: ` ${ana.nombre} `,
-      telefono: telefonoPegado,
-    });
-    expect(
-      pacienteNuevaCitaSchema.safeParse({ nombre: ana.nombre, telefono: '+57 310' }).success,
-    ).toBe(false);
-
-    await r.login('doctor@demo.com', 'Demo2026');
-    let fecha = sumarDias(fechaLocal(), 4);
-    if (instante(fecha, 720).getUTCDay() === 0) fecha = sumarDias(fecha, 1);
-    const cita = await r.crearCita({
-      servicioId: 'resina',
-      inicio: instante(fecha, 480).toISOString(),
-      pacienteNombre: paciente.nombre,
-      telefono: paciente.telefono,
-    });
-    expect(cita).toMatchObject({
-      pacienteId: ana.id,
-      telefono: ana.telefono,
-      estado: 'confirmada',
-    });
-  });
+  it.each(['2145678901', '1234', ''])(
+    'registra como odontólogo con teléfono «%s»',
+    async (telefono) => {
+      const r = await repo();
+      const paciente = pacienteNuevaCitaSchema.parse({ nombre: ' Ana Gómez ', telefono });
+      await r.login('doctor@demo.com', 'Demo2026');
+      let fecha = sumarDias(fechaLocal(), 4);
+      if (instante(fecha, 720).getUTCDay() === 0) fecha = sumarDias(fecha, 1);
+      const datos = {
+        servicioId: 'resina',
+        inicio: instante(fecha, 480).toISOString(),
+        pacienteNombre: paciente.nombre,
+        telefono: paciente.telefono,
+      };
+      await expect(r.crearCita({ ...datos, telefono: '12345678901' })).rejects.toThrow(
+        /10 caracteres/,
+      );
+      const cita = await r.crearCita(datos);
+      expect(cita).toMatchObject({
+        pacienteNombre: 'Ana Gómez',
+        telefono,
+        estado: 'confirmada',
+      });
+    },
+  );
   it('no elimina las citas al cerrar sesión', async () => {
     const r = await repo();
     await r.login('doctor@demo.com', 'Demo2026');

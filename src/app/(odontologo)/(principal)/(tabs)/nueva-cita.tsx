@@ -8,7 +8,7 @@ import { useFranjasDisponibles } from '@/hooks/useFranjasDisponibles';
 import { fechaLocal } from '@/utils/fechas';
 import { repositorio } from '@/services/mock/repositorio';
 import { useAgendaStore } from '@/store/agenda.store';
-import { pacienteNuevaCitaSchema } from '@/utils/validaciones';
+import { MAX_CARACTERES_TELEFONO_CITA, pacienteNuevaCitaSchema } from '@/utils/validaciones';
 export default function NuevaCita() {
   const { data } = useDatos();
   const [nombre, setNombre] = useState(''),
@@ -25,6 +25,7 @@ export default function NuevaCita() {
   const paciente = pacienteNuevaCitaSchema.safeParse({ nombre, telefono });
   const errores = intentoRegistrar && !paciente.success ? paciente.error.flatten().fieldErrors : {};
   const horarioDisponible = franjas.some((franja) => franja.inicio === inicio);
+  const errorHorario = intentoRegistrar && !horarioDisponible;
 
   async function registrar() {
     setIntentoRegistrar(true);
@@ -43,7 +44,7 @@ export default function NuevaCita() {
       setIntentoRegistrar(false);
       useAgendaStore.getState().setFecha(fecha);
       useAgendaStore.getState().setVista('dia');
-      router.replace('/(odontologo)/(tabs)');
+      router.replace('/(odontologo)/(principal)/(tabs)');
     } catch {
       // El formulario muestra el error de la operación y conserva los datos.
     }
@@ -56,32 +57,25 @@ export default function NuevaCita() {
       footer={
         <>
           <ErrorAviso error={accion.error} />
-          {intentoRegistrar && !horarioDisponible ? (
-            <Texto accessibilityRole="alert" className="text-danger text-xs">
-              {inicio
-                ? 'Ese horario ya no está disponible. Elige otro.'
-                : 'Selecciona un horario libre.'}
-            </Texto>
-          ) : null}
-          {intentoRegistrar && !paciente.success ? (
-            <Texto accessibilityRole="alert" className="text-danger text-xs">
-              {paciente.error.issues[0]?.message}
-            </Texto>
-          ) : null}
           <Boton cargando={accion.isPending} onPress={registrar}>
             Registrar cita
           </Boton>
         </>
       }
     >
-      <Campo label="Paciente" value={nombre} onChangeText={setNombre} error={errores.nombre?.[0]} />
+      <Campo
+        label="Paciente"
+        value={nombre}
+        onChangeText={setNombre}
+        error={horarioDisponible ? errores.nombre?.[0] : undefined}
+      />
       <Campo
         label="Teléfono"
         value={telefono}
         onChangeText={setTelefono}
-        keyboardType="phone-pad"
+        keyboardType="number-pad"
+        maxLength={MAX_CARACTERES_TELEFONO_CITA}
         error={errores.telefono?.[0]}
-        ayuda="Celular de 10 dígitos, empezando por 3."
       />
       <Texto className="text-xs font-medium">Servicio</Texto>
       <Opciones
@@ -95,14 +89,19 @@ export default function NuevaCita() {
           .map((s) => ({ valor: s.id, label: `${s.nombre} · ${s.duracionMin} min` }))}
       />
       <Texto className="text-xs font-medium">Fecha</Texto>
+      {errorHorario && (
+        <Texto accessibilityRole="alert" className="text-danger text-xs">
+          Selecciona un horario libre
+        </Texto>
+      )}
       <Calendario
         valor={fecha}
+        error={errorHorario}
         onChange={(v) => {
           setFecha(v);
           setInicio('');
         }}
       />
-      <Texto className="text-xs font-medium">Horarios libres</Texto>
       <Franjas franjas={franjas} valor={inicio} onChange={setInicio} />
     </Pantalla>
   );

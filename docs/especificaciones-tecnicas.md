@@ -83,13 +83,15 @@ src/app/
     perfil.tsx                    P04
     notificaciones.tsx            P03
   (odontologo)/
-    _layout.tsx                   Drawer + guardia de rol
-    (tabs)/
-      _layout.tsx                 Tabs: Agenda · Solicitudes · Nueva cita · Avisos
-      index.tsx                   O01 / O02 / O10
-      solicitudes.tsx             O04 / O06 / O07
-      nueva-cita.tsx              O09
-      avisos.tsx                  O11
+    _layout.tsx                   Stack + guardia de rol
+    (principal)/
+      _layout.tsx                 Drawer
+      (tabs)/
+        _layout.tsx               Tabs: Agenda · Solicitudes · Nueva cita · Avisos
+        index.tsx                 O01 / O02 / O10
+        solicitudes.tsx           O04 / O06 / O07
+        nueva-cita.tsx            O09
+        avisos.tsx                O11
     servicios/index.tsx           C01
     servicios/[id].tsx            C02 / C03
     anticipacion.tsx              C04

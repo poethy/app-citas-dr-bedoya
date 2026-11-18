@@ -2,6 +2,7 @@ import type { BaseDatos, Cita, CrearCita, Perfil } from '@/models';
 import { dentroHorario } from '@/utils/franjas';
 import { HORA, MINUTO } from '@/utils/fechas';
 import { ErrorNegocio } from '@/utils/errores';
+import { pacienteNuevaCitaSchema } from '@/utils/validaciones';
 
 export function exigirDoctor(actor: Perfil): void {
   if (actor.rol !== 'odontologo')
@@ -67,18 +68,22 @@ export function registrarCita(
     actor.rol === 'paciente'
       ? actor
       : db.perfiles.find((p) => p.rol === 'paciente' && p.telefono === input.telefono);
-  const nombre = actor.rol === 'paciente' ? actor.nombre : input.pacienteNombre?.trim();
-  const telefono = actor.rol === 'paciente' ? actor.telefono : input.telefono;
-  if (!nombre || !telefono || !/^3\d{9}$/.test(telefono))
+  const nombre = actor.rol === 'paciente' ? actor.nombre : (input.pacienteNombre ?? '');
+  const telefono = actor.rol === 'paciente' ? actor.telefono : (input.telefono ?? '');
+  if (actor.rol === 'paciente' && (!nombre || !/^3\d{9}$/.test(telefono)))
     throw new ErrorNegocio(
       'DATOS_INVALIDOS',
       'Escribe el nombre y un celular de 10 dígitos que empiece por 3.',
     );
+  const datosPaciente =
+    actor.rol === 'odontologo' ? pacienteNuevaCitaSchema.safeParse({ nombre, telefono }) : null;
+  if (datosPaciente && !datosPaciente.success)
+    throw new ErrorNegocio('DATOS_INVALIDOS', datosPaciente.error.issues[0].message);
   const cita: Cita = {
     solicitudOriginal: actor.rol === 'paciente' && servicio.confirmacion === 'aprobacion',
     id,
     pacienteId: paciente?.id ?? null,
-    pacienteNombre: nombre,
+    pacienteNombre: datosPaciente?.data.nombre ?? nombre,
     telefono,
     servicioId: servicio.id,
     servicioNombre: servicio.nombre,

@@ -1,11 +1,14 @@
-import { useEffect, type PropsWithChildren, type ReactNode } from 'react';
+import { useEffect, useState, type PropsWithChildren, type ReactNode } from 'react';
 import {
   ActivityIndicator,
+  Animated,
+  Easing,
   KeyboardAvoidingView,
   Modal,
   Platform,
   Pressable,
   ScrollView,
+  StyleSheet,
   Text,
   TextInput,
   View,
@@ -13,6 +16,7 @@ import {
   type TextProps,
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
+import { useReducedMotion } from 'react-native-reanimated';
 import { router, useNavigation } from 'expo-router';
 import { DrawerActions } from 'expo-router/react-navigation';
 import { iconos, type NombreIcono } from '@/constants/iconos';
@@ -256,25 +260,69 @@ export function ModalConfirmacion({
   cargando?: boolean;
   error?: unknown;
 }) {
+  const [montado, setMontado] = useState(false);
+  const [alturaPanel, setAlturaPanel] = useState(0);
+  const [progreso] = useState(() => new Animated.Value(0));
+  const reducirMovimiento = useReducedMotion();
+
+  useEffect(() => {
+    if (!montado || (visible && !alturaPanel)) return;
+
+    const animacion = Animated.timing(progreso, {
+      toValue: visible ? 1 : 0,
+      duration: reducirMovimiento ? 0 : visible ? 220 : 180,
+      easing: Easing.out(Easing.cubic),
+      useNativeDriver: Platform.OS !== 'web',
+    });
+    animacion.start(({ finished }) => {
+      if (finished && !visible) setMontado(false);
+    });
+    return () => animacion.stop();
+  }, [alturaPanel, montado, progreso, reducirMovimiento, visible]);
+
   return (
-    <Modal visible={visible} transparent animationType="slide" onRequestClose={cerrar}>
+    <Modal
+      visible={visible || montado}
+      transparent
+      animationType="none"
+      onShow={() => setMontado(true)}
+      onRequestClose={cerrar}
+    >
       <View className="flex-1 justify-end">
-        <Pressable
-          accessibilityLabel="Cerrar confirmación"
-          onPress={cerrar}
-          className="absolute inset-0 bg-black/40"
-        />
-        <SafeAreaView edges={['bottom']} className="bg-white rounded-t-3xl p-6 gap-4">
-          <Texto className="font-semibold text-lg">{titulo}</Texto>
-          <Texto className="text-muted">{detalle}</Texto>
-          <ErrorAviso error={error} />
-          <Boton variant="danger" onPress={confirmar} cargando={cargando}>
-            Confirmar
-          </Boton>
-          <Boton variant="text" onPress={cerrar}>
-            Volver
-          </Boton>
-        </SafeAreaView>
+        <Animated.View style={[StyleSheet.absoluteFill, { opacity: progreso }]}>
+          <Pressable
+            accessibilityLabel="Cerrar confirmación"
+            onPress={cerrar}
+            className="flex-1 bg-black/40"
+          />
+        </Animated.View>
+        <Animated.View
+          onLayout={({ nativeEvent }) => setAlturaPanel(nativeEvent.layout.height)}
+          pointerEvents={visible ? 'auto' : 'none'}
+          style={{
+            opacity: alturaPanel ? 1 : 0,
+            transform: [
+              {
+                translateY: progreso.interpolate({
+                  inputRange: [0, 1],
+                  outputRange: [alturaPanel, 0],
+                }),
+              },
+            ],
+          }}
+        >
+          <SafeAreaView edges={['bottom']} className="bg-white rounded-t-3xl p-6 gap-4">
+            <Texto className="font-semibold text-lg">{titulo}</Texto>
+            <Texto className="text-muted">{detalle}</Texto>
+            <ErrorAviso error={error} />
+            <Boton variant="danger" onPress={confirmar} cargando={cargando}>
+              Confirmar
+            </Boton>
+            <Boton variant="text" onPress={cerrar}>
+              Volver
+            </Boton>
+          </SafeAreaView>
+        </Animated.View>
       </View>
     </Modal>
   );

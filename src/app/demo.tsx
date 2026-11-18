@@ -57,7 +57,7 @@ export default function Demo() {
         onPress={async () => {
           try {
             await vencer.mutateAsync(undefined);
-            router.replace('/(odontologo)/(tabs)/solicitudes');
+            router.replace('/(odontologo)/(principal)/(tabs)/solicitudes');
           } catch {}
         }}
       >

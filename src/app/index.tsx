@@ -11,7 +11,7 @@ export default function Inicio() {
           ? '/(auth)/bienvenida'
           : perfil.rol === 'paciente'
             ? '/(paciente)/(tabs)'
-            : '/(odontologo)/(tabs)'
+            : '/(odontologo)/(principal)/(tabs)'
       }
     />
   );

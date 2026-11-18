@@ -6,10 +6,12 @@ export default function Calendario({
   valor,
   onChange,
   permitirHoy = true,
+  error = false,
 }: {
   valor: string;
   onChange: (v: string) => void;
   permitirHoy?: boolean;
+  error?: boolean;
 }) {
   const hoy = fechaLocal();
   const [mes, setMes] = useState((valor || hoy).slice(0, 7));
@@ -23,7 +25,7 @@ export default function Calendario({
     setMes(d.toISOString().slice(0, 7));
   };
   return (
-    <Tarjeta>
+    <Tarjeta className={error ? 'border border-danger' : undefined}>
       <View className="flex-row justify-between items-center">
         <Texto className="font-medium capitalize">
           {primero.toLocaleDateString('es-CO', {
