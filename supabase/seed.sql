@@ -46,8 +46,9 @@ insert into public.pacientes (nombre, telefono, correo) values
 -- Agenda del jueves 19 de noviembre de 2026 (hora de Bogotá, UTC−5).
 -- La cita de Ana Gómez (11:00 a. m.) no se crea: es la que se agenda en vivo
 -- en la demo, y así S03 muestra las 7 franjas del diseño.
-insert into public.citas (paciente_id, servicio_id, inicio, fin, estado, origen)
-select p.id, s.id, x.inicio::timestamptz, x.inicio::timestamptz + make_interval(mins => s.duracion_min), x.estado::public.estado_cita, 'consultorio'
+insert into public.citas (paciente_id, servicio_id, inicio, fin, estado, origen, precio_acordado_cop, duracion_acordada_min)
+select p.id, s.id, x.inicio::timestamptz, x.inicio::timestamptz + make_interval(mins => s.duracion_min), x.estado::public.estado_cita, 'consultorio',
+       s.precio_cop, s.duracion_min
 from (values
   ('Carlos Ruiz', 'Limpieza dental', '2026-11-19 08:00-05', 'confirmada'),
   ('Laura Pérez', 'Endodoncia',      '2026-11-19 09:30-05', 'pendiente'),

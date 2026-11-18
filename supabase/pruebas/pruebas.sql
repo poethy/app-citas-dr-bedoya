@@ -1,5 +1,6 @@
 -- Pruebas de las reglas de negocio. Las corre correr.mjs después de las migraciones y el seed.
--- Usa fechas de noviembre de 2026; si se corren después del 19/11/2026 hay que moverlas.
+-- Las fechas 2026-11-19, 20 y 22 son la agenda del seed (jueves, viernes y domingo). correr.mjs
+-- las cambia por el próximo jueves que esté a más de 48 h, así que las pruebas no dependen del día.
 -- Ayuda: ejecuta una sentencia y muestra OK o el código de error
 create schema if not exists prueba;
 grant usage on schema prueba to authenticated, anon;
@@ -70,9 +71,17 @@ select prueba.probar('RF-19 bloquear franja libre 16:30–17:15', $$ select publ
 select prueba.probar('No se puede agendar sobre el bloqueo', $$ select public.registrar_cita_consultorio('Pedro Gil', '311 222 3344', (select id from public.servicios where nombre='Valoración general'), '2026-11-19 16:45-05') $$, 'HORARIO_NO_DISPONIBLE');
 select prueba.probar('RF-07 registrar cita (paciente sin cuenta)', $$ select public.registrar_cita_consultorio('Pedro Gil', '311 222 3344', (select id from public.servicios where nombre='Valoración general'), '2026-11-19 15:45-05') $$);
 select prueba.probar('RF-07 teléfono inválido', $$ select public.registrar_cita_consultorio('Pedro Gil', '12345', (select id from public.servicios where nombre='Valoración general'), '2026-11-19 08:45-05') $$, 'TELEFONO_INVALIDO');
--- Cita de Ana para dentro de unas horas (para probar el plazo de cancelación)
-select prueba.probar('Cita de Ana muy cercana', $$ select public.registrar_cita_consultorio('Ana Gómez', '3105551234', (select id from public.servicios where nombre='Valoración general'), date_trunc('hour', now()) + interval '3 hours') $$);
 reset role;
+
+-- Cita de Ana para dentro de 3 horas, para probar el plazo de cancelación. Se inserta directo
+-- (sin validar el horario) porque dentro de 3 horas el consultorio puede estar cerrado.
+alter table public.citas disable trigger citas_validar;
+insert into public.citas (paciente_id, servicio_id, inicio, fin, estado, origen, precio_acordado_cop, duracion_acordada_min)
+select pa.id, s.id, date_trunc('hour', now()) + interval '3 hours', date_trunc('hour', now()) + interval '3 hours 30 minutes',
+       'confirmada', 'consultorio', s.precio_cop, s.duracion_min
+from public.pacientes pa, public.servicios s
+where pa.perfil_id = '00000000-0000-0000-0000-0000000000a1' and s.nombre = 'Valoración general';
+alter table public.citas enable trigger citas_validar;
 
 -- ===== Ana de nuevo: plazos y avisos =====
 set role authenticated;
@@ -88,7 +97,7 @@ reset role;
 
 -- ===== RF-06 escenario 2: la restricción de la base frena dos citas cruzadas aunque se salten las validaciones =====
 alter table public.citas disable trigger citas_validar;
-select prueba.probar('Exclusión en la base (sin trigger)', $$ insert into public.citas (paciente_id, servicio_id, inicio, fin, estado) select paciente_id, servicio_id, inicio, fin, 'pendiente' from public.citas where estado = 'confirmada' limit 1 $$, 'conflicting key value violates exclusion constraint "citas_sin_solapamiento"');
+select prueba.probar('Exclusión en la base (sin trigger)', $$ insert into public.citas (paciente_id, servicio_id, inicio, fin, estado, precio_acordado_cop, duracion_acordada_min) select paciente_id, servicio_id, inicio, fin, 'pendiente', precio_acordado_cop, duracion_acordada_min from public.citas where estado = 'confirmada' limit 1 $$, 'conflicting key value violates exclusion constraint "citas_sin_solapamiento"');
 alter table public.citas enable trigger citas_validar;
 
 -- ===== Recordatorios y resumen =====
@@ -124,3 +133,63 @@ select 'O04 Aprobadas: ' || count(*) from public.citas where estado = 'confirmad
 select 'O08 agendada por: ' || c.origen || ' · ' || coalesce(pf.nombre, '—') from public.citas c left join public.perfiles pf on pf.id = c.creado_por where c.servicio_id = (select id from public.servicios where nombre = 'Resina');
 select 'O11 aviso: ' || titulo || ' — ' || replace(cuerpo, E'\n', ' / ') from public.notificaciones where tipo in ('reprogramada', 'resumen_dia') order by creado_en;
 reset role;
+
+-- ===== Precio y duración acordados (F2) =====
+select prueba.probar('Todas las citas guardan precio y duración acordados', $$ do $x$ begin if exists (select 1 from public.citas where precio_acordado_cop is null or duracion_acordada_min is null) then raise exception 'faltan'; end if; end $x$ $$);
+select prueba.probar('La Resina guardó $180.000 y 60 min', $$ do $x$ begin if not exists (select 1 from public.citas c join public.servicios s on s.id = c.servicio_id where s.nombre = 'Resina' and c.precio_acordado_cop = 180000 and c.duracion_acordada_min = 60) then raise exception 'no copió'; end if; end $x$ $$);
+update public.servicios set precio_cop = 200000, duracion_min = 90 where nombre = 'Resina';
+select prueba.probar('Editar el catálogo no cambia la cita', $$ do $x$ begin if not exists (select 1 from public.citas c join public.servicios s on s.id = c.servicio_id where s.nombre = 'Resina' and c.precio_acordado_cop = 180000 and c.duracion_acordada_min = 60) then raise exception 'cambió'; end if; end $x$ $$);
+set role authenticated;
+set request.jwt.claim.sub = '00000000-0000-0000-0000-0000000000d1';
+select prueba.probar('Reprogramar la Resina al viernes 3:00 p. m.', $$ select public.reprogramar_cita((select c.id from public.citas c join public.servicios s on s.id = c.servicio_id where s.nombre = 'Resina'), '2026-11-20 15:00-05') $$);
+reset role;
+select prueba.probar('Reprogramar conserva la duración acordada (60 min, no 90)', $$ do $x$ begin if not exists (select 1 from public.citas c join public.servicios s on s.id = c.servicio_id where s.nombre = 'Resina' and c.fin - c.inicio = interval '60 minutes' and c.precio_acordado_cop = 180000) then raise exception 'usó el catálogo'; end if; end $x$ $$);
+update public.servicios set precio_cop = 180000, duracion_min = 60 where nombre = 'Resina';
+
+-- ===== Solicitudes vencidas (F2, B4) =====
+-- Dos solicitudes de Ana cuya hora ya pasó, insertadas directo
+alter table public.citas disable trigger citas_validar;
+insert into public.citas (paciente_id, servicio_id, inicio, fin, estado, origen, precio_acordado_cop, duracion_acordada_min)
+select pa.id, s.id, now() - x.horas, now() - x.horas + interval '60 minutes', 'pendiente', 'app', s.precio_cop, s.duracion_min
+from public.pacientes pa, public.servicios s, (values (interval '5 hours'), (interval '3 hours')) as x(horas)
+where pa.perfil_id = '00000000-0000-0000-0000-0000000000a1' and s.nombre = 'Resina';
+alter table public.citas enable trigger citas_validar;
+
+set role authenticated;
+set request.jwt.claim.sub = '00000000-0000-0000-0000-0000000000d1';
+select prueba.probar('Aprobar una solicitud que ya llegó a su hora la deja vencida', $$ do $x$ begin if (public.responder_solicitud((select id from public.citas where estado = 'pendiente' and inicio <= now() order by inicio limit 1), true)).estado <> 'vencida' then raise exception 'la aprobó'; end if; end $x$ $$);
+reset role;
+select prueba.probar('La vencida quedó guardada y no se aprobó', $$ do $x$ begin if (select count(*) from public.citas where estado = 'vencida' and respondida_en is null) <> 1 then raise exception 'no persistió'; end if; end $x$ $$);
+select 'Vencidas por el cron: ' || public.vencer_solicitudes();
+select prueba.probar('vencer_solicitudes no repite (idempotente)', $$ do $x$ begin if public.vencer_solicitudes() <> 0 then raise exception 'repitió'; end if; end $x$ $$);
+select prueba.probar('Ana recibe un aviso por cada solicitud vencida', $$ do $x$ begin if (select count(*) from public.notificaciones where tipo = 'vencida') <> 2 then raise exception 'avisos: %', (select count(*) from public.notificaciones where tipo = 'vencida'); end if; end $x$ $$);
+select prueba.probar('Las confirmadas no vencen', $$ do $x$ begin if exists (select 1 from public.citas where estado = 'vencida' and respondida_en is not null) then raise exception 'venció una confirmada'; end if; end $x$ $$);
+set role authenticated;
+set request.jwt.claim.sub = '00000000-0000-0000-0000-0000000000d1';
+select prueba.probar('No se puede cancelar una vencida', $$ select public.cancelar_cita((select id from public.citas where estado = 'vencida' limit 1)) $$, 'ESTADO_INVALIDO');
+select prueba.probar('No se puede aprobar una vencida', $$ select public.responder_solicitud((select id from public.citas where estado = 'vencida' limit 1), true) $$, 'ESTADO_INVALIDO');
+reset role;
+
+-- ===== C08–C10 horario de atención =====
+-- La cita de Ana de dentro de 3 horas puede caer fuera de cualquier horario: se cancela antes
+update public.citas set estado = 'cancelada' where estado in ('pendiente', 'confirmada') and inicio < '2026-11-19 00:00-05';
+
+set role authenticated;
+set request.jwt.claim.sub = '00000000-0000-0000-0000-0000000000a1';
+select prueba.probar('Ana no puede cambiar el horario', $$ select public.actualizar_horario('[]'::jsonb, null) $$, 'NO_AUTORIZADO');
+reset role;
+
+set role authenticated;
+set request.jwt.claim.sub = '00000000-0000-0000-0000-0000000000d1';
+select prueba.probar('C10 cerrar el jueves a las 10:00 deja citas fuera', $$ select public.actualizar_horario('[{"dia_semana":1,"hora_inicio":"08:00","hora_fin":"18:00"},{"dia_semana":2,"hora_inicio":"08:00","hora_fin":"18:00"},{"dia_semana":3,"hora_inicio":"08:00","hora_fin":"18:00"},{"dia_semana":4,"hora_inicio":"08:00","hora_fin":"10:00"},{"dia_semana":5,"hora_inicio":"08:00","hora_fin":"18:00"},{"dia_semana":6,"hora_inicio":"08:00","hora_fin":"12:00"}]', '{"hora_inicio":"12:30","hora_fin":"13:30","dias":[1,2,3,4,5]}') $$, 'CITAS_FUERA_DE_HORARIO');
+select prueba.probar('C10 el horario no cambió', $$ do $x$ begin if (select hora_fin from public.horario_atencion where dia_semana = 4) <> '18:00' or (select count(*) from public.horario_atencion) <> 6 then raise exception 'cambió'; end if; end $x$ $$);
+select prueba.probar('C10 un almuerzo que cruza la cita de Jorge', $$ select public.actualizar_horario('[{"dia_semana":4,"hora_inicio":"08:00","hora_fin":"18:00"},{"dia_semana":5,"hora_inicio":"08:00","hora_fin":"18:00"}]', '{"hora_inicio":"14:00","hora_fin":"15:00","dias":[4]}') $$, 'CITAS_FUERA_DE_HORARIO');
+select prueba.probar('C09 cierre antes de la apertura', $$ select public.actualizar_horario('[{"dia_semana":4,"hora_inicio":"18:00","hora_fin":"08:00"}]', null) $$, 'HORARIO_INVALIDO');
+select prueba.probar('Día repetido', $$ select public.actualizar_horario('[{"dia_semana":4,"hora_inicio":"08:00","hora_fin":"18:00"},{"dia_semana":4,"hora_inicio":"09:00","hora_fin":"17:00"}]', null) $$, 'HORARIO_INVALIDO');
+select prueba.probar('Hora mal escrita', $$ select public.actualizar_horario('[{"dia_semana":4,"hora_inicio":"ocho","hora_fin":"18:00"}]', null) $$, 'HORARIO_INVALIDO');
+select prueba.probar('C08 guardar: miércoles cerrado, sábado hasta la 1 p. m.', $$ select public.actualizar_horario('[{"dia_semana":1,"hora_inicio":"08:00","hora_fin":"18:00"},{"dia_semana":2,"hora_inicio":"08:00","hora_fin":"18:00"},{"dia_semana":4,"hora_inicio":"08:00","hora_fin":"18:00"},{"dia_semana":5,"hora_inicio":"08:00","hora_fin":"18:00"},{"dia_semana":6,"hora_inicio":"08:00","hora_fin":"13:00"}]', '{"hora_inicio":"12:30","hora_fin":"13:30","dias":[1,2,4,5]}') $$);
+select prueba.probar('C08 el horario nuevo quedó guardado', $$ do $x$ begin if (select count(*) from public.horario_atencion) <> 5 or (select hora_fin from public.horario_atencion where dia_semana = 6) <> '13:00' or exists (select 1 from public.horario_atencion where dia_semana = 3) or (select count(*) from public.bloqueos_recurrentes where motivo = 'Almuerzo') <> 4 then raise exception 'no guardó'; end if; end $x$ $$);
+select 'C08 respuesta: ' || public.actualizar_horario('[{"dia_semana":1,"hora_inicio":"08:00","hora_fin":"18:00"},{"dia_semana":2,"hora_inicio":"08:00","hora_fin":"18:00"},{"dia_semana":3,"hora_inicio":"08:00","hora_fin":"18:00"},{"dia_semana":4,"hora_inicio":"08:00","hora_fin":"18:00"},{"dia_semana":5,"hora_inicio":"08:00","hora_fin":"18:00"},{"dia_semana":6,"hora_inicio":"08:00","hora_fin":"12:00"}]', '{"hora_inicio":"12:30","hora_fin":"13:30","dias":[1,2,3,4,5]}')::text;
+select prueba.probar('Sin almuerzo (null) se guarda', $$ select public.actualizar_horario('[{"dia_semana":4,"hora_inicio":"08:00","hora_fin":"18:00"},{"dia_semana":5,"hora_inicio":"08:00","hora_fin":"18:00"}]', null) $$);
+reset role;
+select prueba.probar('Sin almuerzo no quedan bloqueos de almuerzo', $$ do $x$ begin if exists (select 1 from public.bloqueos_recurrentes where motivo = 'Almuerzo') then raise exception 'quedó'; end if; end $x$ $$);

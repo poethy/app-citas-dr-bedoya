@@ -83,6 +83,7 @@ export type Database = {
           actualizado_en: string
           creado_en: string
           creado_por: string | null
+          duracion_acordada_min: number
           estado: Database["public"]["Enums"]["estado_cita"]
           fin: string
           id: string
@@ -90,6 +91,7 @@ export type Database = {
           numero: number
           origen: Database["public"]["Enums"]["origen_cita"]
           paciente_id: string
+          precio_acordado_cop: number
           recordatorio_enviado_para: string | null
           respondida_en: string | null
           servicio_id: string
@@ -98,6 +100,7 @@ export type Database = {
           actualizado_en?: string
           creado_en?: string
           creado_por?: string | null
+          duracion_acordada_min: number
           estado: Database["public"]["Enums"]["estado_cita"]
           fin: string
           id?: string
@@ -105,6 +108,7 @@ export type Database = {
           numero?: never
           origen?: Database["public"]["Enums"]["origen_cita"]
           paciente_id: string
+          precio_acordado_cop: number
           recordatorio_enviado_para?: string | null
           respondida_en?: string | null
           servicio_id: string
@@ -113,6 +117,7 @@ export type Database = {
           actualizado_en?: string
           creado_en?: string
           creado_por?: string | null
+          duracion_acordada_min?: number
           estado?: Database["public"]["Enums"]["estado_cita"]
           fin?: string
           id?: string
@@ -120,6 +125,7 @@ export type Database = {
           numero?: never
           origen?: Database["public"]["Enums"]["origen_cita"]
           paciente_id?: string
+          precio_acordado_cop?: number
           recordatorio_enviado_para?: string | null
           respondida_en?: string | null
           servicio_id?: string
@@ -379,6 +385,10 @@ export type Database = {
       [_ in never]: never
     }
     Functions: {
+      actualizar_horario: {
+        Args: { p_almuerzo?: Json; p_dias: Json }
+        Returns: Json
+      }
       cancelar_cita: {
         Args: { p_cita_id: string }
         Returns: Database["public"]["Tables"]["citas"]["Row"]
@@ -413,7 +423,12 @@ export type Database = {
       }
     }
     Enums: {
-      estado_cita: "pendiente" | "confirmada" | "rechazada" | "cancelada"
+      estado_cita:
+        | "pendiente"
+        | "confirmada"
+        | "rechazada"
+        | "cancelada"
+        | "vencida"
       origen_cita: "app" | "consultorio"
       rol_usuario: "paciente" | "odontologo"
       tipo_confirmacion: "inmediata" | "aprobacion"
@@ -443,7 +458,13 @@ export type Enums<T extends keyof DefaultSchema["Enums"]> = DefaultSchema["Enums
 export const Constants = {
   public: {
     Enums: {
-      estado_cita: ["pendiente", "confirmada", "rechazada", "cancelada"],
+      estado_cita: [
+        "pendiente",
+        "confirmada",
+        "rechazada",
+        "cancelada",
+        "vencida",
+      ],
       origen_cita: ["app", "consultorio"],
       rol_usuario: ["paciente", "odontologo"],
       tipo_confirmacion: ["inmediata", "aprobacion"],
