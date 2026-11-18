@@ -1,5 +1,6 @@
-import type { BaseDatos, Franja, Rol } from '@/models';
+import type { BaseDatos, Franja, HorarioAtencion, Rol } from '@/models';
 import { HORA, MINUTO, instante, fechaLocal } from './fechas';
+import { almuerzoDe, jornadaDe } from './horario';
 export const cruza = (a: Franja, b: Franja): boolean =>
   Date.parse(a.inicio) < Date.parse(b.fin) && Date.parse(b.inicio) < Date.parse(a.fin);
 
@@ -38,14 +39,9 @@ export function seleccionarTramoDeBloqueo(
   }
   return { inicio, fin: inicio === ancla ? primera.fin : ancla };
 }
-export function horarioDia(fecha: string): Franja | null {
-  const dia = instante(fecha, 720).getUTCDay();
-  return dia === 0
-    ? null
-    : {
-        inicio: instante(fecha, 480).toISOString(),
-        fin: instante(fecha, dia === 6 ? 720 : 1080).toISOString(),
-      };
+/** Apertura y cierre de la fecha según el horario guardado (C08), o null si está cerrado. */
+export function horarioDia(fecha: string, horario: HorarioAtencion): Franja | null {
+  return jornadaDe(fecha, horario);
 }
 export function ocupacion(
   db: BaseDatos,
@@ -53,20 +49,14 @@ export function ocupacion(
   ahora = new Date(),
   excluirId?: string,
 ): Franja[] {
-  const dia = instante(fecha, 720).getUTCDay();
+  const almuerzo = almuerzoDe(fecha, db.horario);
   const citas = db.citas.filter(
     (c) =>
       c.id !== excluirId &&
       (c.estado === 'confirmada' ||
         (c.estado === 'pendiente' && Date.parse(c.inicio) > ahora.getTime())),
   );
-  return [
-    ...citas,
-    ...db.bloqueos,
-    ...(dia > 0 && dia < 6
-      ? [{ inicio: instante(fecha, 750).toISOString(), fin: instante(fecha, 810).toISOString() }]
-      : []),
-  ];
+  return [...citas, ...db.bloqueos, ...(almuerzo ? [almuerzo] : [])];
 }
 export function calcularFranjas(
   db: BaseDatos,
@@ -78,7 +68,7 @@ export function calcularFranjas(
 ): { franjas: Franja[]; capacidad: number } {
   if (!Number.isFinite(duracion) || duracion < 15 || duracion > 180 || duracion % 15 !== 0)
     return { franjas: [], capacidad: 0 };
-  const horario = horarioDia(fecha);
+  const horario = horarioDia(fecha, db.horario);
   if (!horario) return { franjas: [], capacidad: 0 };
   const limite =
     ahora.getTime() + (rol === 'paciente' ? db.configuracion.anticipacionAgendarHoras * HORA : 0);
@@ -116,7 +106,7 @@ export function dentroHorario(
   excluirId?: string,
 ): boolean {
   const fecha = fechaLocal(rango.inicio),
-    horario = horarioDia(fecha);
+    horario = horarioDia(fecha, db.horario);
   return (
     !!horario &&
     rango.inicio >= horario.inicio &&

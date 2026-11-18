@@ -29,6 +29,8 @@ import Asset_pointAmber from '../../assets/figma/2062-2312-imgPunto1.svg';
 import Asset_pointRed from '../../assets/figma/2062-2312-imgPunto2.svg';
 import Asset_resultCheck from '../../assets/figma/2060-2185-imgIconCheck.svg';
 import Asset_resultClock from '../../assets/figma/2060-2369-imgIconClock.svg';
+import Asset_minusNavy from '../../assets/iconos/menos-navy.svg';
+import Asset_plusNavy from '../../assets/iconos/mas-navy.svg';
 export const iconos = {
   pointGreen: { Svg: Asset_pointGreen, width: 3, height: 3 },
   pointAmber: { Svg: Asset_pointAmber, width: 3, height: 3 },
@@ -55,6 +57,8 @@ export const iconos = {
   info: { Svg: Asset_info, width: 11.0, height: 11.0 },
   minus: { Svg: Asset_minus, width: 11.0, height: 11.0 },
   plusWhite: { Svg: Asset_plusWhite, width: 11.0, height: 11.0 },
+  minusNavy: { Svg: Asset_minusNavy, width: 11.0, height: 11.0 },
+  plusNavy: { Svg: Asset_plusNavy, width: 11.0, height: 11.0 },
   smile: { Svg: Asset_smile, width: 32.0, height: 10.2857 },
   smileWhite: { Svg: Asset_smileWhite, width: 57.8808, height: 18.245 },
   inbox: { Svg: Asset_inbox, width: 11.0, height: 11.0 },

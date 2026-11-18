@@ -6,6 +6,7 @@ import type {
   Bloqueo,
   Configuracion,
   CrearCita,
+  HorarioAtencion,
   Perfil,
   Servicio,
 } from '@/models';
@@ -20,7 +21,8 @@ import {
 } from './reglas';
 import { ErrorNegocio } from '@/utils/errores';
 import { cruza, horarioDia, ocupacion } from '@/utils/franjas';
-import { fechaLocal, HORA, horaTexto } from '@/utils/fechas';
+import { fechaLocal, fechaTexto, HORA, horaTexto } from '@/utils/fechas';
+import { citaFueraDeHorario, errorHorario, HORARIO_INICIAL } from '@/utils/horario';
 import { validarNumero } from '@/utils/validaciones';
 
 const CLAVE = 'citas-bedoya:v1';
@@ -121,6 +123,9 @@ async function cargar(): Promise<BaseDatos> {
     const datos: BaseDatos = JSON.parse(raw);
     if (datos.version !== 1 || !Array.isArray(datos.citas) || !Array.isArray(datos.perfiles))
       throw new Error('No se pudo leer la información guardada. No se reemplazaron tus datos.');
+    // Los datos guardados antes de C08 no traen horario: se usa el inicial
+    if (!datos.horario || !Array.isArray(datos.horario.dias))
+      datos.horario = JSON.parse(JSON.stringify(HORARIO_INICIAL));
     memoria = datos;
   }
   return memoria;
@@ -311,6 +316,22 @@ export const repositorio = {
         throw new Error('Usa valores entre 1 y 72 horas.');
       db.configuracion = config;
     }),
+  // C08–C10: mismas reglas que la RPC actualizar_horario de la base
+  guardarHorario: (horario: HorarioAtencion) =>
+    transaccion((db, actor) => {
+      exigirDoctor(actor);
+      const invalido = errorHorario(horario);
+      if (invalido) throw new ErrorNegocio('HORARIO_INVALIDO', invalido);
+      const afectada = citaFueraDeHorario(db.citas, horario, new Date());
+      if (afectada)
+        throw new ErrorNegocio(
+          'CITAS_FUERA_DE_HORARIO',
+          `El ${fechaTexto(afectada.inicio).replace(',', '')} hay una cita de ${afectada.pacienteNombre} a las ${horaTexto(afectada.inicio)} que quedaría fuera del nuevo horario. Cancélala o reprográmala antes de guardar.`,
+          afectada.id,
+        );
+      db.horario = JSON.parse(JSON.stringify(horario));
+      return db.horario;
+    }),
   guardarPerfil: (datos: Pick<Perfil, 'nombre' | 'telefono' | 'correo'>) =>
     transaccion((db, actor) => {
       if (
@@ -324,7 +345,7 @@ export const repositorio = {
   bloquear: (input: Omit<Bloqueo, 'id'>) =>
     transaccion((db, actor) => {
       exigirDoctor(actor);
-      const horario = horarioDia(fechaLocal(input.inicio));
+      const horario = horarioDia(fechaLocal(input.inicio), db.horario);
       if (
         !horario ||
         Date.parse(input.inicio) <= Date.now() ||

@@ -1,5 +1,6 @@
 import type { BaseDatos, Cita, Servicio } from '@/models';
 import { fechaLocal, instante, MINUTO, sumarDias } from '@/utils/fechas';
+import { HORARIO_INICIAL } from '@/utils/horario';
 
 export function crearDatosIniciales(claveDemo: string): BaseDatos {
   const fecha = sumarDias(fechaLocal(), 2);
@@ -95,6 +96,7 @@ export function crearDatosIniciales(claveDemo: string): BaseDatos {
     bloqueos: [],
     avisos: [],
     configuracion: { anticipacionAgendarHoras: 24, anticipacionCambiosHoras: 24 },
+    horario: JSON.parse(JSON.stringify(HORARIO_INICIAL)),
     sesionId: null,
   };
 }

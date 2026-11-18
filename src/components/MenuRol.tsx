@@ -31,6 +31,7 @@ function ContenidoMenu({ rol, ...props }: DrawerContentComponentProps & { rol: R
           { label: 'Servicios y confirmación', ruta: '/(odontologo)/servicios', icono: 'sliders' },
           { label: 'Anticipación mínima', ruta: '/(odontologo)/anticipacion', icono: 'clock' },
           { label: 'Bloquear horarios', ruta: '/(odontologo)/bloqueos', icono: 'ban' },
+          { label: 'Horario de atención', ruta: '/(odontologo)/horario', icono: 'calendar' },
         ];
   items.push({ label: 'Información del consultorio', ruta: '/consultorio', icono: 'info' });
   async function cerrarSesion() {
