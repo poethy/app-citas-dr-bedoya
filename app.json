@@ -1,0 +1,28 @@
+{
+  "expo": {
+    "name": "Citas Dr. Camilo Bedoya",
+    "slug": "app-citas-dr-bedoya",
+    "scheme": "citas-bedoya",
+    "version": "1.0.0",
+    "orientation": "portrait",
+    "userInterfaceStyle": "light",
+    "plugins": [
+      "expo-router",
+      "expo-font",
+      [
+        "expo-location",
+        {
+          "locationWhenInUsePermission": "Usamos tu ubicación solo mientras consultas el mapa del consultorio."
+        }
+      ],
+      "expo-splash-screen"
+    ],
+    "android": {
+      "package": "com.drbedoya.citas"
+    },
+    "web": {
+      "bundler": "metro",
+      "output": "single"
+    }
+  }
+}

@@ -1,0 +1,11 @@
+<svg preserveAspectRatio="none" overflow="visible" style="display: block;" width="11" height="11" viewBox="0 0 11 11" fill="none" xmlns="http://www.w3.org/2000/svg">
+<g id="icon/bell" clip-path="url(#clip0_0_65)">
+<path id="Vector" d="M2.75 3.66666C2.75 2.93731 3.03973 2.23784 3.55546 1.72211C4.07118 1.20639 4.77065 0.916656 5.5 0.916656C6.22935 0.916656 6.92882 1.20639 7.44454 1.72211C7.96027 2.23784 8.25 2.93731 8.25 3.66666C8.25 6.87499 9.625 7.79166 9.625 7.79166H1.375C1.375 7.79166 2.75 6.87499 2.75 3.66666Z" stroke-width="0.916667" stroke-linecap="round" stroke-linejoin="round" stroke="white"/>
+<path id="Vector_2" d="M4.72083 9.625C4.79754 9.76454 4.91032 9.88091 5.04738 9.96196C5.18444 10.043 5.34076 10.0858 5.49999 10.0858C5.65923 10.0858 5.81554 10.043 5.9526 9.96196C6.08966 9.88091 6.20244 9.76454 6.27916 9.625" stroke-width="0.916667" stroke-linecap="round" stroke-linejoin="round" stroke="white"/>
+</g>
+<defs>
+<clipPath id="clip0_0_65">
+<rect width="11" height="11" fill="white"/>
+</clipPath>
+</defs>
+</svg>
