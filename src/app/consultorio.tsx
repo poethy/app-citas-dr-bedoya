@@ -4,8 +4,12 @@ import { Boton, Pantalla, Tarjeta, Texto } from '@/components/ui';
 import { ResumenCita } from '@/components/ResumenCita';
 import Logo from '@/components/Logo';
 import { useSesionStore } from '@/store/sesion.store';
+import { useDatos } from '@/hooks/useDatos';
+import { HORARIO_INICIAL, resumirHorario } from '@/utils/horario';
+import type { NombreIcono } from '@/constants/iconos';
 export default function Consultorio() {
   const perfil = useSesionStore((s) => s.perfil);
+  const { data } = useDatos();
   if (!perfil) return <Redirect href="/(auth)/bienvenida" />;
   return (
     <Pantalla
@@ -25,8 +29,13 @@ export default function Consultorio() {
         <ResumenCita
           filas={[
             ['pin', 'Dirección', 'Calle 18 # 5-27, Ed. Torcoroma, Consultorio 201, Pereira'],
-            ['clock', 'Lunes a viernes', '8:00 a. m. – 6:00 p. m.'],
-            ['calendar', 'Sábado', '8:00 a. m. – 12:00 m.'],
+            ...resumirHorario(data?.horario ?? HORARIO_INICIAL).map(
+              (g, i): [NombreIcono, string, string] => [
+                i === 0 ? 'clock' : 'calendar',
+                g.dias,
+                g.horas,
+              ],
+            ),
           ]}
         />
       </Tarjeta>

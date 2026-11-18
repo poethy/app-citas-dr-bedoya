@@ -67,7 +67,7 @@ export default function Bloqueos() {
   }
 
   const franjas = calcularFranjas(data, fecha, 15, 'odontologo', ahora).franjas;
-  const horario = horarioDia(fecha);
+  const horario = horarioDia(fecha, data.horario);
   const finales = obtenerFinalesDeBloqueo(franjas, inicio);
   const horarioValido = finales.includes(fin);
   const seleccion = horarioValido ? { inicio, fin } : null;

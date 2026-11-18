@@ -243,23 +243,13 @@ export function Pantalla({
     </SafeAreaView>
   );
 }
-export function ModalConfirmacion({
+/** Hoja que sube desde abajo sobre un fondo oscurecido (C06, C09, C10, modales de confirmación). */
+export function HojaInferior({
   visible,
-  titulo,
-  detalle,
-  confirmar,
   cerrar,
-  cargando = false,
-  error,
-}: {
-  visible: boolean;
-  titulo: string;
-  detalle: string;
-  confirmar: () => void;
-  cerrar: () => void;
-  cargando?: boolean;
-  error?: unknown;
-}) {
+  children,
+  etiquetaFondo = 'Cerrar',
+}: PropsWithChildren<{ visible: boolean; cerrar: () => void; etiquetaFondo?: string }>) {
   const [montado, setMontado] = useState(false);
   const [alturaPanel, setAlturaPanel] = useState(0);
   const [progreso] = useState(() => new Animated.Value(0));
@@ -291,7 +281,7 @@ export function ModalConfirmacion({
       <View className="flex-1 justify-end">
         <Animated.View style={[StyleSheet.absoluteFill, { opacity: progreso }]}>
           <Pressable
-            accessibilityLabel="Cerrar confirmación"
+            accessibilityLabel={etiquetaFondo}
             onPress={cerrar}
             className="flex-1 bg-black/40"
           />
@@ -311,20 +301,44 @@ export function ModalConfirmacion({
             ],
           }}
         >
-          <SafeAreaView edges={['bottom']} className="bg-white rounded-t-3xl p-6 gap-4">
-            <Texto className="font-semibold text-lg">{titulo}</Texto>
-            <Texto className="text-muted">{detalle}</Texto>
-            <ErrorAviso error={error} />
-            <Boton variant="danger" onPress={confirmar} cargando={cargando}>
-              Confirmar
-            </Boton>
-            <Boton variant="text" onPress={cerrar}>
-              Volver
-            </Boton>
+          {/* SafeAreaView fija su propio padding; el relleno de la hoja va en el View interno */}
+          <SafeAreaView edges={['bottom']} className="bg-white rounded-t-3xl">
+            <View className="p-6 gap-4">{children}</View>
           </SafeAreaView>
         </Animated.View>
       </View>
     </Modal>
+  );
+}
+export function ModalConfirmacion({
+  visible,
+  titulo,
+  detalle,
+  confirmar,
+  cerrar,
+  cargando = false,
+  error,
+}: {
+  visible: boolean;
+  titulo: string;
+  detalle: string;
+  confirmar: () => void;
+  cerrar: () => void;
+  cargando?: boolean;
+  error?: unknown;
+}) {
+  return (
+    <HojaInferior visible={visible} cerrar={cerrar} etiquetaFondo="Cerrar confirmación">
+      <Texto className="font-semibold text-lg">{titulo}</Texto>
+      <Texto className="text-muted">{detalle}</Texto>
+      <ErrorAviso error={error} />
+      <Boton variant="danger" onPress={confirmar} cargando={cargando}>
+        Confirmar
+      </Boton>
+      <Boton variant="text" onPress={cerrar}>
+        Volver
+      </Boton>
+    </HojaInferior>
   );
 }
 export function AvisoBreve() {

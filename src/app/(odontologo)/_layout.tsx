@@ -31,6 +31,7 @@ export default function DoctorLayout() {
       <Stack.Screen name="servicios" />
       <Stack.Screen name="anticipacion" />
       <Stack.Screen name="bloqueos" />
+      <Stack.Screen name="horario" />
     </Stack>
   );
 }

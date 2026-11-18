@@ -14,6 +14,8 @@ export type CodigoError =
   | 'ESTADO_INVALIDO'
   | 'SERVICIO_NO_EXISTE'
   | 'SOLICITUD_VENCIDA'
+  | 'HORARIO_INVALIDO'
+  | 'CITAS_FUERA_DE_HORARIO'
   | 'TELEFONO_INVALIDO'
   | 'NOMBRE_REQUERIDO'
   | 'NO_AUTORIZADO'
@@ -53,6 +55,10 @@ function mensajeDe(codigo: CodigoError, horas: number | undefined): string {
       return 'Ese servicio ya no está disponible.';
     case 'SOLICITUD_VENCIDA':
       return 'Esta solicitud venció al llegar la hora de la cita.';
+    case 'HORARIO_INVALIDO':
+      return 'La hora de cierre debe ser posterior a la de apertura.';
+    case 'CITAS_FUERA_DE_HORARIO':
+      return 'Hay citas que quedarían fuera del nuevo horario. Cancélalas o reprográmalas antes de guardar.';
     case 'TELEFONO_INVALIDO':
       return 'Escribe un celular de 10 dígitos que empiece por 3.';
     case 'NOMBRE_REQUERIDO':
@@ -98,6 +104,8 @@ const CODIGOS = new Set<string>([
   'ESTADO_INVALIDO',
   'SERVICIO_NO_EXISTE',
   'SOLICITUD_VENCIDA',
+  'HORARIO_INVALIDO',
+  'CITAS_FUERA_DE_HORARIO',
   'TELEFONO_INVALIDO',
   'NOMBRE_REQUERIDO',
   'NO_AUTORIZADO',

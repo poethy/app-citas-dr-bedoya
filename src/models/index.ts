@@ -50,6 +50,23 @@ export interface Configuracion {
   anticipacionAgendarHoras: number;
   anticipacionCambiosHoras: number;
 }
+/** Un día abierto. Las horas van en minutos desde la medianoche de Bogotá (480 = 8:00 a. m.). */
+export interface DiaAtencion {
+  /** 0 = domingo … 6 = sábado */
+  diaSemana: number;
+  apertura: number;
+  cierre: number;
+}
+export interface Almuerzo {
+  inicio: number;
+  fin: number;
+  dias: number[];
+}
+/** C08: un día que no aparece en `dias` está cerrado. */
+export interface HorarioAtencion {
+  dias: DiaAtencion[];
+  almuerzo: Almuerzo | null;
+}
 export interface BaseDatos {
   version: 1;
   perfiles: Perfil[];
@@ -58,6 +75,7 @@ export interface BaseDatos {
   bloqueos: Bloqueo[];
   avisos: Aviso[];
   configuracion: Configuracion;
+  horario: HorarioAtencion;
   sesionId: string | null;
 }
 export interface Franja {
