@@ -11,7 +11,9 @@ PostgreSQL de Supabase con las tablas, reglas y seguridad de la app. El diseño 
 | URL | `https://hiechbnorpgzrwfgufjp.supabase.co` |
 | Clave para la app | La **publishable** (`sb_publishable_…`), en Project Settings → API. Va en el `.env` (ver [.env.template](../.env.template)); se comparte con el equipo por un canal privado |
 
-Creado el 17 de noviembre de 2026 con las migraciones, el seed y la Edge Function de esta carpeta. Se probó en el proyecto real: registro con vinculación de ficha, agendar, choque de horario, aprobación pendiente, cancelación y permisos. El asesor de seguridad de Supabase solo marca las 9 funciones RPC que la app debe poder llamar (validan el rol por dentro).
+Creado el 17 de noviembre de 2026 con las migraciones, el seed y la Edge Function de esta carpeta. Se probó en el proyecto real: registro con vinculación de ficha, agendar, choque de horario, aprobación pendiente, cancelación y permisos. El asesor de seguridad de Supabase marca las 10 funciones RPC que la app debe poder llamar (validan el rol por dentro) y que la protección de contraseñas filtradas de Auth está apagada.
+
+El 18 de noviembre de 2026 se aplicaron las migraciones de `vencida`, precio y duración acordados, el cron de vencimiento y `actualizar_horario`. Las 4 citas que había se rellenaron con el precio y la duración de su servicio.
 
 **Pendiente (requiere el panel de Supabase):**
 1. **Authentication → Sign In / Providers → Email**: desactivar **Confirm email** mientras se desarrolla, para que el registro (RF-01) entre directo.
