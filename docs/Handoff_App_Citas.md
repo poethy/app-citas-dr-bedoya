@@ -59,6 +59,14 @@ Si Expo no corre en el equipo de la presentación, la app se abre en el navegado
 - Las variables `EXPO_PUBLIC_SUPABASE_URL` y `EXPO_PUBLIC_SUPABASE_KEY` están en el proyecto de Vercel `app-citas-dr-bedoya`; el `.env` no se sube (`.vercelignore`).
 - En la web no hay push (los avisos se ven al abrir la app) y el mapa pide la ubicación al navegador.
 - Para publicar cambios de `main`: `npx vercel deploy --prod` desde la raíz del repo, con la sesión de Vercel del dueño del proyecto.
+- **iPhone:** se usa esta versión web. En Safari → Compartir → «Agregar a pantalla de inicio» queda con el ícono «CB» y se abre sin la barra del navegador (`public/manifest.webmanifest`).
+
+### Plan para la presentación
+
+- **Android:** el APK de EAS (con notificaciones push).
+- **iPhone:** la versión web (https://app-citas-dr-bedoya.vercel.app) agregada a la pantalla de inicio.
+- Las dos usan el mismo Supabase: lo que hace el paciente en un teléfono lo ve el odontólogo en el otro.
+- Antes de presentar, correr `supabase/datos_prueba.sql` para tener la agenda de ejemplo.
 
 ### Notificaciones push
 
@@ -104,9 +112,9 @@ Referencia de código: `C:/Users/StivenM/Documents/react-native-parcial`, especi
 - [x] Horario de atención (C08–C10) en Figma, base y app.
 - [x] Concurrencia entre citas y bloqueos en la base.
 - [x] Registro del token de push, proyecto de EAS, Firebase (FCM V1) y primer APK con EAS.
-- [x] Matriz académica, informe en borrador, guía de prueba con el cliente y bitácora hasta el PR #23.
-- [x] Ajustes de uso: ver contraseña, avisos separados en «Por ver» y «Vistos», skeleton de G01 en las listas, A00 Splash al abrir (también el splash nativo) y Nueva cita con Supabase.
-- [x] Versión web publicada en Vercel como plan B.
+- [x] Matriz académica, informe en borrador, guía de prueba con el cliente y bitácora hasta el PR #26.
+- [x] Ajustes de uso: ver contraseña, avisos separados en «Por ver» y «Vistos», skeleton con la forma de cada pantalla, A00 Splash al abrir (también el splash nativo) y Nueva cita con Supabase.
+- [x] Versión web publicada en Vercel como plan B, con ícono para la pantalla de inicio del iPhone.
 - [ ] Prueba de push en un teléfono con el APK.
 - [ ] Prueba de punta a punta con cuentas reales y en Android (mapa, permisos y GPS incluidos); capturas.
 - [ ] Prueba con el cliente y al menos un ajuste derivado.

@@ -21,6 +21,9 @@ Requisito del curso (sección 7 del documento del proyecto). Una fila por avance
 | 2026-11-19 | Hito 2 · Interfaz y lógica | Ojo de contraseña y avisos en el Figma; skeleton igual a G01; pruebas y demo sin depender del día de la semana | Juan José Ospina | #20 | La agenda de ejemplo caía en sábado y una prueba fallaba según el día | | Splash |
 | 2026-11-19 | Hito 2 · Interfaz y lógica | Al abrir la app se ve A00 Splash (también el splash nativo) en lugar del skeleton de lista | Juan José Ospina | #21, #22 | El skeleton de lista no se parecía a la pantalla a la que se entraba | | APK con EAS |
 | 2026-11-19 | Hito 4 · Integración | Versión web publicada en Vercel como plan B (https://app-citas-dr-bedoya.vercel.app), ajustada para celular | Juan José Ospina | #23 | En Vercel el transformador de SVG no encontraba el de Expo y la compilación fallaba | | Prueba con cuentas reales en el celular |
+| 2026-11-19 | Hito 2 · Interfaz y lógica | Skeleton con la forma de cada pantalla (detalle, horario, calendario y formulario) y fechas con mayúscula solo al inicio | Juan José Ospina | #24 | La clase capitalize ponía «21 De Noviembre» | | Ícono de la web |
+| 2026-11-19 | Hito 4 · Integración | Ícono «CB» y manifest para agregar la web a la pantalla de inicio del iPhone | Juan José Ospina | #25 | | | APK |
+| 2026-11-19 | Hito 4 · Integración | EAS y Firebase (FCM V1) configurados y primer APK para Android con notificaciones push | Juan José Ospina | #26 | google-services.json no puede ir al repo: llega a EAS como variable secreta de tipo archivo | | Prueba de push en un teléfono |
 
 ## Implementación del frontend en revisión
 
