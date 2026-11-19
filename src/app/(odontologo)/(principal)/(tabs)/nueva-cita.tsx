@@ -50,6 +50,14 @@ export default function NuevaCita() {
   const horarioDisponible = franjas.some((franja) => franja.inicio === inicio);
   const errorHorario = intentoRegistrar && !horarioDisponible;
 
+  function limpiarFormulario() {
+    setNombre('');
+    setTelefono('');
+    setInicio('');
+    setIntentoRegistrar(false);
+    accion.reset();
+  }
+
   async function registrar() {
     setIntentoRegistrar(true);
     if (!paciente.success || !horarioDisponible) return;
@@ -83,6 +91,13 @@ export default function NuevaCita() {
           <Boton cargando={accion.isPending} onPress={registrar}>
             Registrar cita
           </Boton>
+          <Boton
+            variant="secondary"
+            disabled={accion.isPending}
+            onPress={limpiarFormulario}
+          >
+            Limpiar formulario
+          </Boton>
         </>
       }
     >
@@ -90,7 +105,7 @@ export default function NuevaCita() {
         label="Paciente"
         value={nombre}
         onChangeText={setNombre}
-        error={horarioDisponible ? errores.nombre?.[0] : undefined}
+        error={errores.nombre?.[0]}
       />
       <Campo
         label="Teléfono"
