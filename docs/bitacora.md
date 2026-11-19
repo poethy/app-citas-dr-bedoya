@@ -7,6 +7,12 @@ Requisito del curso (sección 7 del documento del proyecto). Una fila por avance
 | 2026-11-09 | Hito 1 · Definición | Diseño completo en Figma: wireframes, flujo de navegación y alta fidelidad | | | | | Revisión del equipo |
 | 2026-11-10 | Hito 1 · Definición | Especificación técnica, feedback del equipo (precios, anticipación para agendar, flujo por rol) y prueba del prototipo | | | | | Base de datos |
 | 2026-11-17 | Hito 1 · Definición | Base de datos en Supabase: tablas, reglas, seguridad por rol, datos de ejemplo y pruebas | | | | | Crear el proyecto Expo |
+| 2026-11-17 | Hito 2 · Interfaz y lógica | Frontend completo de los dos roles (A, P, S, M, O, C y MP) con datos simulados persistentes, Stack, Tabs y Drawer, contador, cálculo de franjas, formularios y mapa | John Stiven | #4 | Rutas del Drawer dentro de Fragment no se registraban en Expo Router 58 | | Conectar con Supabase |
+| 2026-11-17 | Hito 2 · Interfaz y lógica | Diseño de C08–C10 «Horario de atención» (Figma y especificación) y C05 con el diseño nuevo en alta fidelidad | Juan José Ospina | #5 | Regla de citas que quedan fuera del horario: se propuso igual que C06 (por confirmar) | | Programar C08 |
+| 2026-11-17 | Hito 3 · Datos y ubicación | Capa remota: cliente Axios con token, Supabase Auth, traducción de errores, mappers y pruebas (reemplaza los PR #2 y #3) | Juan José Ospina | #6 | Los PR #2 y #3 chocaban con la estructura del #4 | | Migraciones que faltaban |
+| 2026-11-18 | Hito 4 · Integración | Base: estado vencida, precio y duración acordados, RPC actualizar_horario; pruebas de la base sin depender de la hora | Juan José Ospina | #7, #9 | Postgres no deja usar un valor nuevo de un enum en la misma transacción; dos pruebas fallaban según la hora | | Aplicar en Supabase |
+| 2026-11-18 | Hito 2 · Interfaz y lógica | Pantallas C08–C10: horario por día, edición en pasos de 15 min y aviso de citas fuera del horario | Juan José Ospina | #8 | Las hojas inferiores perdían el margen en la web | | Integración remota |
+| 2026-11-18 | Hito 3 · Datos y ubicación | App conectada a Supabase: Auth real, listado y detalle de citas por HTTP con Axios, RPC para las escrituras y datos de prueba para presentar | Juan José Ospina | #10 | El paciente no ve citas ajenas: sus franjas salen de disponibilidad_dia; `declare` rompía el empaquetado de Metro | | Prueba en Android y con el cliente |
 
 ## Implementación del frontend en revisión
 
