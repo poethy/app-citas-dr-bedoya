@@ -193,24 +193,24 @@ export function Esqueleto({ titulo }: { titulo: string }) {
       accessibilityLabel={titulo}
       className="flex-1 p-4 bg-navy-50"
     >
-      <Animated.View style={{ opacity: pulso, gap: 16 }}>
-        <View className="flex-row items-center gap-3">
-          <View className="w-11 h-11 rounded-full bg-[#dbe3ee]" />
-          {barra('45%', 18)}
-        </View>
-        {barra('70%')}
-        {[0, 1, 2].map((i) => (
+      {/* Igual que G01 en el Figma: tarjetas con un bloque y tres barras */}
+      <Animated.View style={{ opacity: pulso, gap: 14 }}>
+        {[0, 1, 2, 3].map((i) => (
           <View
             key={i}
-            className="bg-white rounded-[18px] p-4 gap-2.5"
+            className="flex-row items-center bg-white rounded-[18px] px-4 py-3.5 gap-3.5"
             style={{ boxShadow: '0px 4px 16px rgba(11,31,58,0.06)' }}
           >
-            {barra('35%', 10)}
-            {barra('80%', 14)}
-            {barra('55%', 10)}
+            <View className="w-14 h-16 rounded-xl bg-[#dbe3ee]" />
+            <View className="flex-1 gap-2">
+              {barra('90%', 12)}
+              {barra('65%', 10)}
+              {barra('45%', 10)}
+            </View>
           </View>
         ))}
       </Animated.View>
+      <Texto className="text-xs text-muted text-center mt-4">{titulo}…</Texto>
     </View>
   );
 }
