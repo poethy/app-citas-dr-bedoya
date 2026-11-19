@@ -17,6 +17,7 @@ import { useDatos } from '@/hooks/useDatos';
 import { useNotificacionesPush } from '@/hooks/useNotificacionesPush';
 import { useSesionStore } from '@/store/sesion.store';
 import { Estado, AvisoBreve } from '@/components/ui';
+import Splash from '@/components/Splash';
 import { simularFallo } from '@/services/mock/repositorio';
 
 const queryClient = new QueryClient({ defaultOptions: { queries: { retry: 1 } } });
@@ -60,7 +61,7 @@ function Aplicacion() {
         }}
       />
     );
-  if (!datos.data) return <Estado titulo="Preparando tu agenda" cargando />;
+  if (!datos.data) return <Splash titulo="Preparando tu agenda" />;
   return (
     <>
       <StatusBar style="dark" />
@@ -84,7 +85,7 @@ export default function RootLayout() {
             className="flex-1 bg-navy-50"
             style={{ width: '100%', maxWidth: 480, alignSelf: 'center' }}
           >
-            {fonts || error ? <Aplicacion /> : <Estado titulo="Cargando recursos" cargando />}
+            {fonts || error ? <Aplicacion /> : <Splash titulo="Cargando recursos" />}
           </View>
         </QueryClientProvider>
       </SafeAreaProvider>

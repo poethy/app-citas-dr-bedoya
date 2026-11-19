@@ -5,10 +5,17 @@ interface Props {
   blanco?: boolean;
   completo?: boolean;
   centrado?: boolean;
+  /** Monograma grande de A00 Splash (150 de ancho). */
+  grande?: boolean;
 }
-export default function Logo({ blanco = false, completo = false, centrado = false }: Props) {
+export default function Logo({
+  blanco = false,
+  completo = false,
+  centrado = false,
+  grande = false,
+}: Props) {
   const { Svg, width, height } = blanco ? iconos.smileWhite : iconos.smile;
-  const ancho = completo ? 104 : 64,
+  const ancho = grande ? 150 : completo ? 104 : 64,
     alto = (height * ancho) / width;
   return (
     <View
@@ -23,16 +30,24 @@ export default function Logo({ blanco = false, completo = false, centrado = fals
         <Texto
           style={{
             fontFamily: 'LibreBaskerville_400Regular',
-            fontSize: 42,
-            lineHeight: 50,
-            letterSpacing: -1.6,
+            fontSize: grande ? 96 : 42,
+            lineHeight: grande ? 106 : 50,
+            letterSpacing: grande ? -3.6 : -1.6,
           }}
           className={blanco ? 'text-white' : ''}
         >
           CB
         </Texto>
       )}
-      <View style={{ width: ancho, height: alto, alignItems: 'center', justifyContent: 'center' }}>
+      <View
+        style={{
+          width: ancho,
+          height: alto,
+          marginTop: grande ? -8 : 0,
+          alignItems: 'center',
+          justifyContent: 'center',
+        }}
+      >
         <View style={{ width, height, transform: [{ scale: ancho / width }] }}>
           <Svg />
         </View>
