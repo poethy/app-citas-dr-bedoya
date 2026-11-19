@@ -10,7 +10,7 @@ import {
 import type { Rol } from '@/models';
 import Logo from './Logo';
 import { Icono, ModalConfirmacion, Texto } from './ui';
-import { repositorio } from '@/services/mock/repositorio';
+import { repositorio } from '@/services/repositorio';
 import { useSesionStore } from '@/store/sesion.store';
 import { useAgendarStore } from '@/store/agendar.store';
 import { useQueryClient } from '@tanstack/react-query';

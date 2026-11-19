@@ -64,6 +64,7 @@ Edge Function enviar-notificaciones ──► Expo Push ──► teléfonos con
 | `functions/enviar-notificaciones/` | Edge Function que manda las notificaciones por Expo Push |
 | `../src/types/database.ts` | Tipos TypeScript generados de la base, para la app |
 | `seed.sql` | Datos de ejemplo: horario, almuerzo, 4 servicios con precio, 5 fichas de pacientes y la agenda del jueves 19 de noviembre de 2026 |
+| `datos_prueba.sql` | Datos para presentar la app: agenda de ejemplo en los próximos días hábiles (solo fichas sin cuenta) y coordenadas y teléfono de prueba del consultorio. Se corre en el SQL Editor y se puede repetir |
 | `crear_odontologo.sql` | Convierte una cuenta en la del odontólogo (una sola vez) |
 | `config.toml` | Configuración de la CLI de Supabase |
 

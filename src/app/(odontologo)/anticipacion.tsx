@@ -1,6 +1,6 @@
 import { useState } from 'react';
 import { useAccion, useDatos } from '@/hooks/useDatos';
-import { repositorio } from '@/services/mock/repositorio';
+import { repositorio } from '@/services/repositorio';
 import { Boton, ErrorAviso, Pantalla, Texto } from '@/components/ui';
 import Contador from '@/components/Contador';
 export default function Anticipacion() {

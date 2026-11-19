@@ -6,8 +6,12 @@ import { useConexion } from '@/hooks/useConexion';
 import { useInterfazStore } from '@/store/interfaz.store';
 import MapaVista from '@/components/MapaVista';
 import { Boton, ErrorAviso, Pantalla, Tarjeta, Texto } from '@/components/ui';
+import { useDatos } from '@/hooks/useDatos';
 export default function Mapa() {
   const gps = useSeguimientoUbicacion();
+  const { data } = useDatos();
+  const ubicacion = data?.configuracion.ubicacion ?? null;
+  const punto = ubicacion ? { latitude: ubicacion.latitud, longitude: ubicacion.longitud } : null;
   const { conectado } = useConexion();
   const [continuar, setContinuar] = useState(false),
     [centrar, setCentrar] = useState(0),
@@ -47,6 +51,8 @@ export default function Mapa() {
                 posicion={gps.posicion}
                 centrar={centrar}
                 onEstado={setEstadoMapa}
+                punto={punto}
+                etiqueta={punto ? 'Consultorio 201 · Ed. Torcoroma' : undefined}
               />
             </View>
             {estadoMapa === 'error' || !conectado ? (
@@ -82,10 +88,12 @@ export default function Mapa() {
               <Texto className="text-xs text-muted">
                 Calle 18 # 5-27, Edificio Torcoroma, Consultorio 201
               </Texto>
-              <Texto className="text-[11px] text-muted">
-                El marcador es una referencia en Pereira. Coordenadas exactas pendientes de
-                confirmar.
-              </Texto>
+              {punto ? null : (
+                <Texto className="text-[11px] text-muted">
+                  El marcador es una referencia en Pereira. Coordenadas exactas pendientes de
+                  confirmar.
+                </Texto>
+              )}
               <View className="flex-row gap-2">
                 <View className="flex-1">
                   <Boton

@@ -1,7 +1,15 @@
-import { useEffect, useRef } from 'react';
-import { mapaHtml } from '@/constants/mapa-html';
+import { useEffect, useMemo, useRef } from 'react';
+import { crearMapaHtml, PUNTO_REFERENCIA } from '@/constants/mapa-html';
 import type { MapaProps } from './MapaVista';
-export default function MapaVista({ posicion, centrar, onEstado }: MapaProps) {
+export default function MapaVista({ posicion, centrar, onEstado, punto, etiqueta }: MapaProps) {
+  const html = useMemo(
+    () =>
+      crearMapaHtml(
+        punto ?? PUNTO_REFERENCIA,
+        etiqueta ?? 'Referencia en Pereira · coordenadas por confirmar',
+      ),
+    [punto, etiqueta],
+  );
   const ref = useRef<HTMLIFrameElement>(null);
   useEffect(() => {
     ref.current?.contentWindow?.postMessage(JSON.stringify({ posicion, centrar: !!centrar }), '*');
@@ -22,8 +30,8 @@ export default function MapaVista({ posicion, centrar, onEstado }: MapaProps) {
   return (
     <iframe
       ref={ref}
-      title="Mapa de referencia en Pereira"
-      srcDoc={mapaHtml}
+      title="Mapa del consultorio"
+      srcDoc={html}
       style={{ border: 0, width: '100%', height: '100%', minHeight: 320 }}
       sandbox="allow-scripts allow-same-origin"
     />

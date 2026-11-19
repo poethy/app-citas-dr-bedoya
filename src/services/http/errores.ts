@@ -16,6 +16,7 @@ export type CodigoError =
   | 'SOLICITUD_VENCIDA'
   | 'HORARIO_INVALIDO'
   | 'CITAS_FUERA_DE_HORARIO'
+  | 'RANGO_INVALIDO'
   | 'TELEFONO_INVALIDO'
   | 'NOMBRE_REQUERIDO'
   | 'NO_AUTORIZADO'
@@ -59,6 +60,8 @@ function mensajeDe(codigo: CodigoError, horas: number | undefined): string {
       return 'La hora de cierre debe ser posterior a la de apertura.';
     case 'CITAS_FUERA_DE_HORARIO':
       return 'Hay citas que quedarían fuera del nuevo horario. Cancélalas o reprográmalas antes de guardar.';
+    case 'RANGO_INVALIDO':
+      return 'Elige un intervalo en el que el fin sea posterior al inicio.';
     case 'TELEFONO_INVALIDO':
       return 'Escribe un celular de 10 dígitos que empiece por 3.';
     case 'NOMBRE_REQUERIDO':
@@ -81,7 +84,6 @@ function mensajeDe(codigo: CodigoError, horas: number | undefined): string {
 }
 
 export class ErrorApi extends ErrorNegocio {
-  declare codigo: CodigoError;
   readonly anticipacionHoras?: number;
   readonly detalle?: string;
 
@@ -106,6 +108,7 @@ const CODIGOS = new Set<string>([
   'SOLICITUD_VENCIDA',
   'HORARIO_INVALIDO',
   'CITAS_FUERA_DE_HORARIO',
+  'RANGO_INVALIDO',
   'TELEFONO_INVALIDO',
   'NOMBRE_REQUERIDO',
   'NO_AUTORIZADO',
@@ -134,7 +137,15 @@ export function traducirErrorHttp(
   if (estado === undefined) return new ErrorApi('SIN_CONEXION');
   const detalle = cuerpo?.details ?? cuerpo?.message ?? undefined;
   const conocido = codigoDesdeMensaje(cuerpo?.message);
-  if (conocido) return new ErrorApi(conocido, { detalle: cuerpo?.details ?? undefined });
+  if (conocido) {
+    // Las RPC mandan las horas de anticipación vigentes en el detalle (FUERA_DE_PLAZO, FUERA_DE_ANTICIPACION)
+    const horas = Number(cuerpo?.details);
+    const conHoras = conocido === 'FUERA_DE_PLAZO' || conocido === 'FUERA_DE_ANTICIPACION';
+    return new ErrorApi(conocido, {
+      detalle: cuerpo?.details ?? undefined,
+      anticipacionHoras: conHoras && Number.isInteger(horas) && horas > 0 ? horas : undefined,
+    });
+  }
   if (cuerpo?.code === '23P01') return new ErrorApi('HORARIO_NO_DISPONIBLE');
   if (cuerpo?.code === '42501' || estado === 401 || estado === 403) {
     return new ErrorApi('NO_AUTORIZADO', { detalle });

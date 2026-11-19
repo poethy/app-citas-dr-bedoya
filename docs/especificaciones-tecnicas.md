@@ -2,7 +2,7 @@
 
 Versión 2.1 · 17 de noviembre de 2026 · Decisiones de negocio acordadas.
 
-El documento separa el trabajo del frontend del trabajo del backend. El frontend de esta entrega usa datos simulados persistentes. El equipo ya incorporó un backend de Supabase desde main, documentado en `supabase/README.md`; esta entrega lo conserva sin modificar ni aplicar migraciones. La Parte II reúne su contrato y los ajustes acordados que deben contrastarse antes de integrar ambos trabajos. Los ejemplos SQL de este documento no reemplazan las migraciones vigentes.
+El documento separa el trabajo del frontend del trabajo del backend. Con `.env` la app usa el backend de Supabase (documentado en `supabase/README.md`); sin `.env` usa el servicio simulado con datos persistentes en el teléfono. `src/services/repositorio.ts` elige uno u otro con la misma interfaz. La Parte II reúne el contrato del backend. Los ejemplos SQL de este documento no reemplazan las migraciones vigentes.
 
 ## Parte I Frontend
 
@@ -462,7 +462,7 @@ El backend existente usa el resumen a las 8:00 a. m. de Bogotá y Expo Push; la 
 
 supabase-js se usa **solo para Auth**: registro, login, logout, sesión y escucha de cambios. Todos los datos pasan por Axios.
 
-**Estado actual:** el cliente, la traducción de errores (`src/services/http/errores.ts`, con `ErrorApi` que hereda de `ErrorNegocio`), Auth (`src/services/remoto/auth.remoto.ts`) y las consultas de perfil, servicios y configuración (`src/services/remoto/datos.remoto.ts`) ya existen y tienen pruebas, pero las pantallas siguen usando el servicio simulado. Las migraciones con `precio_acordado_cop`, `duracion_acordada_min` y el estado `vencida` ya están en `supabase/migrations/`; las citas remotas se agregan cuando se apliquen en Supabase, y después se cambia el proveedor simulado por el remoto (B8).
+**Estado actual:** integrado. `src/services/remoto/repositorio.remoto.ts` implementa la misma interfaz que el servicio simulado: Auth con supabase-js; lecturas con Axios (`citas.remoto.ts` para listado y detalle por id, más servicios, configuración, horario, bloqueos y avisos) y escrituras de citas por RPC. El paciente calcula sus franjas con la ocupación de `disponibilidad_dia`, porque la RLS no le deja ver citas ajenas. `responder_solicitud` devuelve la cita vencida sin error y la app la convierte en `SOLICITUD_VENCIDA`. Con `CITAS_FUERA_DE_HORARIO` la app busca la cita afectada para el botón «Ver la cita» de C10. El correo de la cuenta no se edita desde P04. Las pruebas están en `tests/integracion.test.ts` (Axios y Auth simulados).
 
 #### B6.2 Endpoints
 
@@ -558,8 +558,9 @@ El frontend entrega modelos, interfaces de respuesta, mappers, firmas de servici
 ### B9 Pendientes que no cambian las decisiones cerradas
 
 - Confirmar horario, almuerzo, servicios, precios, teléfono y coordenadas reales del consultorio.
-- C08 Horario de atención: confirmar con el equipo que un cambio de horario se rechaza si deja citas activas fuera (C10, igual que C06). La RPC `actualizar_horario` ya está en una migración, pendiente de aplicar en Supabase.
-- Aplicar en Supabase las migraciones del 18 de noviembre (vencida, precio y duración acordados, cron de vencimiento y `actualizar_horario`) y después conectar las citas remotas en la app.
+- C08 Horario de atención: confirmar con el equipo que un cambio de horario se rechaza si deja citas activas fuera (C10, igual que C06). La RPC `actualizar_horario` ya está aplicada en Supabase.
+- Coordenadas, teléfono y datos reales del consultorio: hoy hay valores de prueba (`supabase/datos_prueba.sql`). Al tenerlos, basta con actualizar `configuracion`; el mapa los lee de ahí.
+- Registrar el token de Expo Push del dispositivo en `tokens_push` para recibir los avisos con la app cerrada.
 - Contrastar con el backend existente los recordatorios cada 15 minutos, el resumen diario a las 8:00 a. m. de Bogotá y el envío por Expo Push; registrar tokens y probar un development build de Android.
 - Definir vinculación segura de pacientes que llamaron y después crean cuenta; la propuesta original usaba teléfono, pero requiere verificación.
 - Definir si una reprogramación hecha por el doctor de un servicio con aprobación confirma directamente o conserva el estado previo. Lo acordado de confirmación directa cubre citas nuevas registradas por él; el paciente sí reaplica la regla del servicio.

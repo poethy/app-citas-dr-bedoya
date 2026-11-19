@@ -20,7 +20,7 @@ import Franjas from '@/components/Franjas';
 import CitaCard from '@/components/CitaCard';
 import { useFranjasDisponibles } from '@/hooks/useFranjasDisponibles';
 import { dinero, fechaTexto, horaTexto } from '@/utils/fechas';
-import { repositorio } from '@/services/mock/repositorio';
+import { repositorio } from '@/services/repositorio';
 import { ResumenCita } from '@/components/ResumenCita';
 export default function AgendarScreen({ paso }: { paso: 1 | 2 | 3 | 4 | 5 }) {
   const { data } = useDatos();

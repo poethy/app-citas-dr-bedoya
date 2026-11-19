@@ -1,5 +1,5 @@
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
-import { repositorio } from '@/services/mock/repositorio';
+import { repositorio } from '@/services/repositorio';
 import { useInterfazStore } from '@/store/interfaz.store';
 
 export function useDatos() {

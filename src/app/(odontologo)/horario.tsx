@@ -4,7 +4,7 @@ import { Pressable, Switch, View } from 'react-native';
 import { router } from 'expo-router';
 import type { HorarioAtencion } from '@/models';
 import { useAccion, useDatos } from '@/hooks/useDatos';
-import { repositorio } from '@/services/mock/repositorio';
+import { repositorio } from '@/services/repositorio';
 import { Boton, ErrorAviso, Estado, HojaInferior, Pantalla, Texto } from '@/components/ui';
 import SelectorHora from '@/components/SelectorHora';
 import { ErrorNegocio } from '@/utils/errores';

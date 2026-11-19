@@ -43,12 +43,28 @@ export function seleccionarTramoDeBloqueo(
 export function horarioDia(fecha: string, horario: HorarioAtencion): Franja | null {
   return jornadaDe(fecha, horario);
 }
+/**
+ * Rangos ocupados de una fecha. Si llegan `externos` (disponibilidad_dia del servidor, que ya
+ * incluye citas de todos, bloqueos y almuerzo) se usan esos; si no, se calculan con los datos
+ * locales. Con `excluirId` la cita que se reprograma no ocupa su propio espacio.
+ */
 export function ocupacion(
   db: BaseDatos,
   fecha: string,
   ahora = new Date(),
   excluirId?: string,
+  externos?: Franja[] | null,
 ): Franja[] {
+  if (externos) {
+    const propia = excluirId ? db.citas.find((c) => c.id === excluirId) : undefined;
+    return propia
+      ? externos.filter(
+          (r) =>
+            Date.parse(r.inicio) !== Date.parse(propia.inicio) ||
+            Date.parse(r.fin) !== Date.parse(propia.fin),
+        )
+      : externos;
+  }
   const almuerzo = almuerzoDe(fecha, db.horario);
   const citas = db.citas.filter(
     (c) =>
@@ -65,6 +81,7 @@ export function calcularFranjas(
   rol: Rol,
   ahora = new Date(),
   excluirId?: string,
+  externos?: Franja[] | null,
 ): { franjas: Franja[]; capacidad: number } {
   if (!Number.isFinite(duracion) || duracion < 15 || duracion > 180 || duracion % 15 !== 0)
     return { franjas: [], capacidad: 0 };
@@ -75,7 +92,7 @@ export function calcularFranjas(
   let tramos: [number, number][] = [
     [Math.max(Date.parse(horario.inicio), limite), Date.parse(horario.fin)],
   ];
-  for (const rango of ocupacion(db, fecha, ahora, excluirId)) {
+  for (const rango of ocupacion(db, fecha, ahora, excluirId, externos)) {
     const inicio = Date.parse(rango.inicio),
       fin = Date.parse(rango.fin);
     tramos = tramos.flatMap(([a, b]) =>

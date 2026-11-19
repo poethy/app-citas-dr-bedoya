@@ -7,13 +7,15 @@ import Calendario from '@/components/Calendario';
 import Franjas from '@/components/Franjas';
 import { calcularFranjas } from '@/utils/franjas';
 import { fechaLocal, fechaTexto, horaTexto } from '@/utils/fechas';
-import { repositorio } from '@/services/mock/repositorio';
+import { repositorio } from '@/services/repositorio';
+import { useOcupacion } from '@/hooks/useOcupacion';
 export default function Reprogramar() {
   const { id } = useLocalSearchParams<{ id: string }>();
   const { data } = useDatos();
   const perfil = useSesionStore((s) => s.perfil);
   const [fecha, setFecha] = useState(fechaLocal()),
     [inicio, setInicio] = useState('');
+  const ocupacion = useOcupacion(fecha);
   const accion = useAccion(
     (nuevo: string) => repositorio.reprogramar(id, nuevo),
     'Cita reprogramada.',
@@ -30,6 +32,7 @@ export default function Reprogramar() {
     perfil.rol,
     new Date(),
     cita.id,
+    ocupacion.ocupados,
   ).franjas;
   return (
     <Pantalla

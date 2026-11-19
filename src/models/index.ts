@@ -18,6 +18,8 @@ export interface Servicio {
 }
 export interface Cita {
   id: string;
+  /** Consecutivo de la base para «Cita #A-1024»; la demo no lo tiene. */
+  numero?: number;
   pacienteId: string | null;
   pacienteNombre: string;
   telefono: string;
@@ -49,6 +51,8 @@ export interface Aviso {
 export interface Configuracion {
   anticipacionAgendarHoras: number;
   anticipacionCambiosHoras: number;
+  /** MP01: coordenadas del consultorio guardadas en la base; la demo no las tiene. */
+  ubicacion?: { latitud: number; longitud: number } | null;
 }
 /** Un día abierto. Las horas van en minutos desde la medianoche de Bogotá (480 = 8:00 a. m.). */
 export interface DiaAtencion {
