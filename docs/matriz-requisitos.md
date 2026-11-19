@@ -1,6 +1,6 @@
 # Matriz de implementación del frontend
 
-18 de noviembre de 2026. Con `.env` la app usa Supabase: Auth real, datos por HTTP con Axios (`src/services/remoto/`), RPC con las reglas en el servidor y datos compartidos entre teléfonos (RF-06 entre dispositivos). Sin `.env` se usa la demo local (`src/services/mock/`). Queda pendiente el push con la app cerrada (registro de tokens).
+19 de noviembre de 2026. Con `.env` la app usa Supabase: Auth real, datos por HTTP con Axios (`src/services/remoto/`), RPC con las reglas en el servidor y datos compartidos entre teléfonos (RF-06 entre dispositivos). Sin `.env` se usa la demo local (`src/services/mock/`). El push con la app cerrada llega en el APK de EAS (Firebase FCM V1); en Expo Go y en la web los avisos se ven al abrir la app. La versión web está publicada en https://app-citas-dr-bedoya.vercel.app.
 
 | Requisitos | Pantallas | Código principal | Verificación |
 | --- | --- | --- | --- |
@@ -9,7 +9,7 @@
 | RF-07 | O09 y O10 | src/app/(odontologo)/(principal)/(tabs)/nueva-cita.tsx | Registro como doctor para el mismo día, con servicio de aprobación y confirmación directa. |
 | RF-08 a RF-11 | S07, S08, O04 a O07, P03 | src/app/(odontologo)/(principal)/(tabs)/solicitudes.tsx; src/screens/DetalleCitaScreen.tsx; src/screens/AvisosScreen.tsx | Solicitud del paciente aprobada desde sesión del doctor; estados y avisos persistentes. |
 | RF-12 a RF-15 | M03, M05 a M08, O08, C04 | src/screens/DetalleCitaScreen.tsx; src/app/cita/[id]/reprogramar.tsx; src/app/(odontologo)/anticipacion.tsx | Pruebas del plazo exacto, excepción por rol, reprogramación atómica y conservación de valores. |
-| RF-16 y RF-17 | P03, O11 | src/services/mock/repositorio.ts; src/screens/AvisosScreen.tsx | Recordatorios locales al consultar y resumen calculado al abrir; sin push ni garantía con la app cerrada. |
+| RF-16 y RF-17 | P03, O11 | src/screens/AvisosScreen.tsx; src/hooks/useNotificacionesPush.ts; supabase/functions/enviar-notificaciones | Avisos separados en «Por ver» y «Vistos»; push con la app cerrada en el APK de EAS (falta la prueba en un teléfono). |
 | RF-18 | O01 y O02 | src/app/(odontologo)/(principal)/(tabs)/index.tsx; src/components/AgendaSemana.tsx | Vista diaria y cuadrícula semanal; tocar un día abre su agenda. |
 | RF-19 | C05 a C07 | src/app/(odontologo)/bloqueos.tsx; src/services/mock/repositorio.ts | Validación local de citas, almuerzo y bloqueos; creación y eliminación persistentes. |
 | RF-20 a RF-27 | MP01 a MP07 | src/hooks/useSeguimientoUbicacion.ts; src/components/MapaVista.tsx; src/components/MapaVista.web.tsx | Leaflet, WebView e iframe; código de permisos y limpieza de suscripciones. Prueba en Android real pendiente; coordenadas de referencia explícitamente identificadas. |

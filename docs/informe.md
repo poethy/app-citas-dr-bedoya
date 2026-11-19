@@ -67,13 +67,15 @@ Ver [matriz-requisitos.md](matriz-requisitos.md): una tabla por requerimiento fu
 
 ## 7. Evidencias de pruebas
 
-| Prueba | Comando | Resultado (18/11/2026) |
+| Prueba | Comando | Resultado (19/11/2026) |
 | --- | --- | --- |
 | Tipos | `npx tsc --noEmit` | Sin errores |
 | Lint | `npm run lint` | Sin errores |
-| Pruebas de la app (reglas, repositorio, horario, capa remota) | `npm test` | 84 de 84 |
-| Pruebas de la base (reglas, permisos, vencimiento, horario, concurrencia) | `cd supabase/pruebas && npm test` | 58 de 58 en `main`; 63 de 63 con el PR #11 (concurrencia) |
+| Pruebas de la app (reglas, repositorio, horario, capa remota, fechas) | `npm test` | 93 de 93 |
+| Pruebas de la base (reglas, permisos, vencimiento, horario, concurrencia, C10) | `cd supabase/pruebas && npm test` | 64 de 64 |
 | Recorrido en el navegador | `npm run web` | C08–C10, menú, P05 y arranque en modo servidor sin errores en consola |
+| Versión web publicada | https://app-citas-dr-bedoya.vercel.app | Bienvenida, rutas internas y conexión a Supabase; pantallas de ambos roles revisadas a 375 × 812 |
+| APK de Android (EAS) | `npx eas-cli build -p android --profile preview` | Primer build generado; falta la prueba de push en un teléfono |
 | Android con Expo Go | — | Pendiente |
 
 ## 8. Prueba con el cliente
@@ -83,8 +85,8 @@ Pendiente. La guía y la plantilla para registrarla están en [prueba-con-client
 ## 9. Límites conocidos
 
 - **Datos de prueba:** la agenda, las coordenadas y el teléfono del consultorio son de prueba (`supabase/datos_prueba.sql`) hasta que el consultorio confirme los reales.
-- **Avisos con la app cerrada:** la app ya registra el token del teléfono, pero el push solo llega en un APK propio (EAS) con `projectId` y credenciales de FCM. En Expo Go y en la web los avisos se ven al abrir la app.
-- **Confirmación de correo:** con «Confirm email» activo en Supabase, un paciente nuevo debe confirmar su correo antes de entrar.
-- **Regla de C10:** propuesta por confirmar con el equipo.
+- **Avisos con la app cerrada:** solo llegan en el APK de EAS (Firebase FCM V1). En Expo Go y en la web los avisos se ven al abrir la app.
+- **iPhone:** no hay app nativa (exigiría una cuenta de Apple Developer). En iPhone se usa la versión web agregada a la pantalla de inicio, sin push.
+- **Confirmación de correo:** «Confirm email» está desactivado en Supabase para que los pacientes entren al registrarse; la verificación de correo sigue abierta en B9.
 - **Mapa:** necesita Internet para Leaflet y las teselas. No calcula rutas; muestra el consultorio y la ubicación del paciente.
 - **Correo de la cuenta:** no se cambia desde P04.

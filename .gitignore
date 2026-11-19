@@ -44,3 +44,7 @@ tmp/
 # Vercel (proyecto vinculado y token local que crea la CLI)
 .vercel
 .env*.local
+
+# Firebase (llega a EAS como variable de tipo archivo) y claves de cuentas de servicio
+google-services.json
+*firebase-adminsdk*.json
