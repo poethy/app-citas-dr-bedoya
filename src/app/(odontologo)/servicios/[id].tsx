@@ -5,7 +5,7 @@ import { useAccion, useDatos } from '@/hooks/useDatos';
 import { Boton, Campo, ErrorAviso, Estado, Opciones, Pantalla, Texto } from '@/components/ui';
 import Contador from '@/components/Contador';
 import Calendario from '@/components/Calendario';
-import { repositorio } from '@/services/mock/repositorio';
+import { repositorio } from '@/services/repositorio';
 import { fechaLocal, fechaTexto } from '@/utils/fechas';
 import { calcularFranjas } from '@/utils/franjas';
 import { validarNumero } from '@/utils/validaciones';

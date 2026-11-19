@@ -3,7 +3,7 @@ import { View } from 'react-native';
 import { useAccion } from '@/hooks/useDatos';
 import { useSesionStore } from '@/store/sesion.store';
 import { Boton, Campo, ErrorAviso, Pantalla, Texto } from '@/components/ui';
-import { repositorio } from '@/services/mock/repositorio';
+import { repositorio } from '@/services/repositorio';
 import { perfilSchema } from '@/utils/validaciones';
 import BotonSalir from '@/components/BotonSalir';
 export default function Perfil() {

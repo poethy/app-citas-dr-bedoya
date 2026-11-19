@@ -150,7 +150,23 @@ async function transaccion<T>(cambio: (db: BaseDatos, actor: Perfil) => T): Prom
     return resultado;
   });
 }
+async function actorConsulta(): Promise<{ db: BaseDatos; actor: Perfil }> {
+  const db = await repositorio.consultar();
+  const actor = db.perfiles.find((p) => p.id === db.sesionId);
+  if (!actor) throw new ErrorNegocio('NO_AUTORIZADO', 'Inicia sesión para consultar tus citas.');
+  return { db, actor };
+}
 export const repositorio = {
+  listarCitas: async () => {
+    const { db, actor } = await actorConsulta();
+    return db.citas.filter((c) => actor.rol === 'odontologo' || c.pacienteId === actor.id);
+  },
+  obtenerCita: async (id: string) => {
+    const { db, actor } = await actorConsulta();
+    return obtenerCita(db, actor, id);
+  },
+  /** La demo calcula la ocupación con sus datos locales. */
+  ocupacionDia: async (_fecha: string): Promise<null> => null,
   consultar: (): Promise<BaseDatos> =>
     serializar(async () => {
       await new Promise((resolve) => setTimeout(resolve, 180));

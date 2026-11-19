@@ -1,6 +1,6 @@
 # Matriz de implementación del frontend
 
-17 de noviembre de 2026. El estado indica cobertura en el código de la demo local, no una implementación de backend. RF-06 entre dispositivos, Auth real, seguridad del servidor y entrega de avisos con la app cerrada requieren la integración posterior.
+18 de noviembre de 2026. Con `.env` la app usa Supabase: Auth real, datos por HTTP con Axios (`src/services/remoto/`), RPC con las reglas en el servidor y datos compartidos entre teléfonos (RF-06 entre dispositivos). Sin `.env` se usa la demo local (`src/services/mock/`). Queda pendiente el push con la app cerrada (registro de tokens).
 
 | Requisitos | Pantallas | Código principal | Verificación |
 | --- | --- | --- | --- |

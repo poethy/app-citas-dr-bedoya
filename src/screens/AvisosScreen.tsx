@@ -3,7 +3,7 @@ import { router } from 'expo-router';
 import { useAccion, useDatos } from '@/hooks/useDatos';
 import { useSesionStore } from '@/store/sesion.store';
 import { Boton, ErrorAviso, Estado, Pantalla, Tarjeta, Texto } from '@/components/ui';
-import { repositorio } from '@/services/mock/repositorio';
+import { repositorio, usaServidor } from '@/services/repositorio';
 import { fechaLocal, fechaTexto, horaTexto } from '@/utils/fechas';
 export default function AvisosScreen() {
   const { data } = useDatos();
@@ -64,7 +64,7 @@ export default function AvisosScreen() {
           detalle="Aquí verás los cambios de tus citas y solicitudes."
         />
       )}
-      {perfil?.rol === 'odontologo' ? (
+      {perfil?.rol === 'odontologo' && !usaServidor ? (
         <Boton variant="text" onPress={() => router.push('/demo')}>
           Escenarios de demostración
         </Boton>

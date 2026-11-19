@@ -4,7 +4,7 @@ import { router } from 'expo-router';
 import { useAccion, useDatos } from '@/hooks/useDatos';
 import { Boton, ErrorAviso, Estado, Opciones, Pantalla, Tarjeta, Texto } from '@/components/ui';
 import { ChipEstado } from '@/components/CitaCard';
-import { repositorio } from '@/services/mock/repositorio';
+import { repositorio } from '@/services/repositorio';
 import { fechaTexto, horaTexto } from '@/utils/fechas';
 export default function Solicitudes() {
   const { data } = useDatos();

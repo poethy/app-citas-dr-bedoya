@@ -1,7 +1,7 @@
 import { useState } from 'react';
 import { router } from 'expo-router';
 import { useQueryClient } from '@tanstack/react-query';
-import { repositorio } from '@/services/mock/repositorio';
+import { repositorio } from '@/services/repositorio';
 import { useSesionStore } from '@/store/sesion.store';
 import { useAgendarStore } from '@/store/agendar.store';
 import { Boton, ModalConfirmacion } from './ui';

@@ -17,7 +17,7 @@ import {
 import { ChipEstado } from '@/components/CitaCard';
 import { ResumenCita } from '@/components/ResumenCita';
 import { dinero, fechaTexto, HORA, horaTexto } from '@/utils/fechas';
-import { repositorio } from '@/services/mock/repositorio';
+import { repositorio } from '@/services/repositorio';
 export default function DetalleCitaScreen({ solicitud = false }: { solicitud?: boolean }) {
   const ahora = useAhora();
   const { id } = useLocalSearchParams<{ id: string }>();
@@ -144,7 +144,9 @@ export default function DetalleCitaScreen({ solicitud = false }: { solicitud?: b
     >
       <Tarjeta>
         <ChipEstado estado={cita.estado} />
-        <Texto className="text-xs text-muted">Cita #{cita.id.slice(0, 8)}</Texto>
+        <Texto className="text-xs text-muted">
+          Cita #{cita.numero ? `A-${cita.numero}` : cita.id.slice(0, 8)}
+        </Texto>
         <Texto className="font-semibold text-xl">
           {doctor ? cita.pacienteNombre : cita.servicioNombre}
         </Texto>

@@ -1,5 +1,5 @@
 // Consultas remotas con Axios que ya calzan con el esquema aplicado en Supabase (B6.2).
-// Las citas quedan fuera hasta que la base tenga precio y duración acordados y el estado vencida.
+// Las citas están en citas.remoto.ts.
 import {
   mapConfiguracion,
   mapPerfil,
@@ -42,7 +42,10 @@ export async function obtenerServicio(id: string): Promise<Servicio> {
 /** C04, S03 y M06: las dos anticipaciones. */
 export async function obtenerConfiguracion(): Promise<Configuracion> {
   const { data } = await clienteHttp.get<ConfiguracionRespuesta[]>('/configuracion', {
-    params: { id: 'eq.1', select: 'anticipacion_agendar_horas,anticipacion_cambios_horas' },
+    params: {
+      id: 'eq.1',
+      select: 'anticipacion_agendar_horas,anticipacion_cambios_horas,latitud,longitud',
+    },
   });
   const fila = data[0];
   if (!fila)

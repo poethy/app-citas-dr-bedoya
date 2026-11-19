@@ -6,7 +6,12 @@ App móvil para gestionar citas del consultorio del Dr. Camilo Bedoya Orozco en 
 
 Frontend implementado con React Native, TypeScript y Expo SDK 58. Incluye navegación por rol, agendamiento, citas, solicitudes, agenda diaria/semanal, servicios, anticipaciones, bloqueos, avisos y mapa.
 
-La demo guarda datos y sesión con AsyncStorage. Cerrar y volver a abrir conserva los cambios. Cambiar de cuenta permite actuar como paciente y odontólogo en el mismo dispositivo. El equipo ya incorporó el backend de Supabase en `main`; se conserva en `supabase/` y su integración con esta demo queda pendiente. La demo no utiliza autenticación remota ni sincronización entre teléfonos.
+La app tiene dos modos, según exista o no el `.env`:
+
+- **Con `.env` (entrega):** usa Supabase. Login, registro y sesión con Supabase Auth; todos los datos por HTTP con Axios contra `/rest/v1` (listado y detalle de citas, servicios, configuración, horario, bloqueos y avisos) y las escrituras de citas por RPC. Paciente y odontólogo comparten la información desde teléfonos distintos.
+- **Sin `.env` (demo local):** usa el servicio simulado (`src/services/mock`) con AsyncStorage, las cuentas de prueba de abajo y los escenarios de demostración.
+
+El punto único que elige uno u otro es `src/services/repositorio.ts`.
 
 ## Trabajo del equipo
 
@@ -55,9 +60,15 @@ npm start
 
 Para Android, abre el QR con Expo Go compatible con SDK 58 y usa la misma red. Si la red local impide la conexión, prueba `npx expo start --tunnel` (requiere Internet). `npm run android` inicia el flujo con un dispositivo/emulador preparado; no genera un APK por sí solo. `npm run web` abre la versión de navegador.
 
-No se necesita Supabase ni .env para la demo. .env.template conserva un punto de configuración opcional para la integración HTTP futura.
+Para usar Supabase, copia `.env.template` como `.env` y llena `EXPO_PUBLIC_SUPABASE_URL` y `EXPO_PUBLIC_SUPABASE_KEY` (Supabase → Project Settings → API, clave pública). Reinicia Expo con `npx expo start --clear` para que tome las variables. Sin `.env` arranca la demo local.
 
-### Cuentas de prueba
+Con Supabase:
+
+- **Odontólogo:** la cuenta se crea una sola vez (ver `supabase/README.md` y `supabase/crear_odontologo.sql`).
+- **Pacientes:** se registran desde la app. Para que entren sin confirmar el correo, desactiva «Confirm email» en Supabase → Authentication → Providers → Email.
+- **Datos de prueba para presentar:** corre `supabase/datos_prueba.sql` en el SQL Editor. Crea una agenda de ejemplo en los próximos días hábiles y pone coordenadas de prueba del consultorio. Se puede repetir antes de cada presentación.
+
+### Cuentas de prueba (solo demo local, sin `.env`)
 
 | Rol | Correo | Contraseña de demo |
 | --- | --- | --- |

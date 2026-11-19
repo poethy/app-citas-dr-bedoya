@@ -4,7 +4,7 @@ import { router } from 'expo-router';
 import { useQueryClient } from '@tanstack/react-query';
 import { Boton, Campo, ErrorAviso, Pantalla, Texto } from '@/components/ui';
 import Logo from '@/components/Logo';
-import { repositorio } from '@/services/mock/repositorio';
+import { repositorio, usaServidor } from '@/services/repositorio';
 import { useSesionStore } from '@/store/sesion.store';
 import { registroSchema } from '@/utils/validaciones';
 export default function AccesoScreen({ registro = false }: { registro?: boolean }) {
@@ -110,7 +110,7 @@ export default function AccesoScreen({ registro = false }: { registro?: boolean 
         ayuda={registro ? 'Usa al menos 8 caracteres, una letra y un número.' : undefined}
       />
       <ErrorAviso error={error} />
-      {!registro ? (
+      {usaServidor ? null : !registro ? (
         <View className="gap-2 mt-4">
           <Texto className="text-xs text-muted">Cuentas de prueba · contraseña: Demo2026</Texto>
           <Boton

@@ -19,7 +19,7 @@ import LineaTiempoBloqueo, { duracionBloqueo } from '@/components/LineaTiempoBlo
 import type { Franja } from '@/models';
 import { fechaLocal, fechaTexto, horaTexto } from '@/utils/fechas';
 import { calcularFranjas, horarioDia, obtenerFinalesDeBloqueo } from '@/utils/franjas';
-import { repositorio } from '@/services/mock/repositorio';
+import { repositorio } from '@/services/repositorio';
 
 type Paso = 'fecha' | 'horario' | 'motivo';
 

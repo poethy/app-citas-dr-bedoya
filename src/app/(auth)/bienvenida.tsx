@@ -4,6 +4,7 @@ import { SafeAreaView } from 'react-native-safe-area-context';
 import Logo from '@/components/Logo';
 import { Boton, Texto } from '@/components/ui';
 import { iconos } from '@/constants/iconos';
+import { usaServidor } from '@/services/repositorio';
 export default function Bienvenida() {
   return (
     <SafeAreaView className="flex-1 bg-white">
@@ -30,9 +31,11 @@ export default function Bienvenida() {
           <Boton variant="secondary" onPress={() => router.push('/(auth)/registro')}>
             Crear cuenta
           </Boton>
-          <Texto className="text-center text-xs text-muted">
-            Demostración con datos de ejemplo
-          </Texto>
+          {usaServidor ? null : (
+            <Texto className="text-center text-xs text-muted">
+              Demostración con datos de ejemplo
+            </Texto>
+          )}
         </View>
       </View>
     </SafeAreaView>

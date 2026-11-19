@@ -116,7 +116,12 @@ describe('mappers remotos', () => {
 
   it('mapConfiguracion toma las dos anticipaciones', () => {
     expect(
-      mapConfiguracion({ anticipacion_agendar_horas: 24, anticipacion_cambios_horas: 12 }),
-    ).toEqual({ anticipacionAgendarHoras: 24, anticipacionCambiosHoras: 12 });
+      mapConfiguracion({
+        anticipacion_agendar_horas: 24,
+        anticipacion_cambios_horas: 12,
+        latitud: null,
+        longitud: null,
+      }),
+    ).toEqual({ anticipacionAgendarHoras: 24, anticipacionCambiosHoras: 12, ubicacion: null });
   });
 });

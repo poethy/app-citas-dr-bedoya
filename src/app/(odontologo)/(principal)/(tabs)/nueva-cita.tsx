@@ -6,7 +6,7 @@ import Calendario from '@/components/Calendario';
 import Franjas from '@/components/Franjas';
 import { useFranjasDisponibles } from '@/hooks/useFranjasDisponibles';
 import { fechaLocal } from '@/utils/fechas';
-import { repositorio } from '@/services/mock/repositorio';
+import { repositorio } from '@/services/repositorio';
 import { useAgendaStore } from '@/store/agenda.store';
 import { MAX_CARACTERES_TELEFONO_CITA, pacienteNuevaCitaSchema } from '@/utils/validaciones';
 export default function NuevaCita() {
