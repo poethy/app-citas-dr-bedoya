@@ -1,12 +1,13 @@
 import { useState } from 'react';
-import { View } from 'react-native';
+import { Pressable, View } from 'react-native';
 import { router } from 'expo-router';
 import { useAccion, useDatos } from '@/hooks/useDatos';
-import { Boton, ErrorAviso, Estado, Opciones, Pantalla, Tarjeta, Texto } from '@/components/ui';
+import { Boton, Campo, ErrorAviso, Estado, Opciones, Pantalla, Tarjeta, Texto } from '@/components/ui';
 import { ChipEstado } from '@/components/CitaCard';
 import { repositorio } from '@/services/repositorio';
 import { fechaTexto, horaTexto } from '@/utils/fechas';
 export default function Solicitudes() {
+  const [buscarFiltro, setBuscarFiltro] = useState('')
   const { data } = useDatos();
   const [estado, setEstado] = useState('pendiente');
   const accion = useAccion(
@@ -16,7 +17,7 @@ export default function Solicitudes() {
         ? 'Solicitud aprobada.'
         : 'Solicitud rechazada. La franja quedó libre.',
   );
-  const citas =
+  let citas =
     data?.citas
       .filter(
         (c) =>
@@ -43,8 +44,17 @@ export default function Solicitudes() {
           { valor: 'vencida', label: 'Vencidas' },
         ]}
       />
+      <Campo
+            label="Buscar paciente"
+            placeholder="Ej. Laura, Daniela…"
+            value={buscarFiltro}
+            onChangeText={setBuscarFiltro}
+          />
+      
+
       <ErrorAviso error={accion.error} />
-      {citas.length ? (
+      { 
+      citas.length ? (
         citas.map((c) => (
           <Tarjeta key={c.id}>
             <View className="flex-row justify-between">
