@@ -87,12 +87,21 @@ La app está publicada en **https://app-citas-dr-bedoya.vercel.app**, conectada 
 
 La app registra el token del teléfono en `tokens_push` al iniciar sesión y lo borra al cerrarla; la Edge Function `enviar-notificaciones` manda los avisos. Expo Go en Android no recibe push remotos, así que hace falta un APK propio. En Expo Go y en la web los avisos se ven al abrir la app.
 
-Pasos (una sola vez, con la cuenta de Expo del equipo):
+Ya está configurado (19 de noviembre de 2026):
 
-1. `npx eas login` y `npx eas init`. Esto crea el proyecto en Expo y escribe `extra.eas.projectId` en `app.json` (hay que hacer commit de ese cambio).
-2. Credenciales de Android para push (FCM): crear un proyecto en Firebase, descargar la clave de cuenta de servicio de FCM v1 y subirla con `npx eas credentials` → Android → Push Notifications.
-3. Variables públicas para el build: `npx eas env:create --environment preview --name EXPO_PUBLIC_SUPABASE_URL --value <url> --visibility plaintext` y lo mismo con `EXPO_PUBLIC_SUPABASE_KEY`. El `.env` no se sube a EAS.
-4. `npx eas build -p android --profile preview` genera el APK para instalar en los teléfonos.
+- **Proyecto de EAS:** `@marlborovfx/app-citas-dr-bedoya` (`extra.eas.projectId` y `owner` en `app.json`).
+- **Firebase:** proyecto `app-citas-dr-bedoya` con la app Android `com.drbedoya.citas`. La clave de la cuenta de servicio (FCM V1) está en las credenciales de EAS; no está en el repo.
+- **`google-services.json`:** no va al repo (`.gitignore`). En EAS es la variable secreta de tipo archivo `GOOGLE_SERVICES_JSON`, y `app.config.js` la pasa a `android.googleServicesFile`.
+- **Variables del build:** `EXPO_PUBLIC_SUPABASE_URL` y `EXPO_PUBLIC_SUPABASE_KEY` en los entornos `preview` y `production` de EAS.
+- **Firma del APK:** keystore generado y guardado por EAS.
+
+Para generar un APK nuevo (con la sesión de Expo del dueño del proyecto):
+
+```bash
+npx eas-cli build -p android --profile preview
+```
+
+Al terminar, EAS da un enlace y un QR para descargar e instalar el APK en Android (hay que permitir «instalar apps de origen desconocido»). Para que otra persona del equipo genere builds, el dueño la invita al proyecto en expo.dev.
 
 ### Cuentas de prueba (solo demo local, sin `.env`)
 

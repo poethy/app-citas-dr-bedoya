@@ -1,6 +1,6 @@
 # Handoff de App Citas Dr Camilo Bedoya
 
-Actualizado el 19 de noviembre de 2026. La app está conectada a Supabase (Auth real, datos por HTTP con Axios y escrituras por RPC) y conserva la demo local sin `.env`. Todas las migraciones están aplicadas. Hay una versión web publicada en Vercel como plan B para presentar: https://app-citas-dr-bedoya.vercel.app. Pendiente: APK con EAS para push, prueba en Android real, prueba con el cliente y datos reales del consultorio.
+Actualizado el 19 de noviembre de 2026. La app está conectada a Supabase (Auth real, datos por HTTP con Axios y escrituras por RPC) y conserva la demo local sin `.env`. Todas las migraciones están aplicadas. Hay una versión web publicada en Vercel como plan B para presentar: https://app-citas-dr-bedoya.vercel.app. EAS y Firebase están configurados para generar el APK con push. Pendiente: prueba en Android real, prueba con el cliente y datos reales del consultorio.
 
 ## Cliente y alcance
 
@@ -62,7 +62,7 @@ Si Expo no corre en el equipo de la presentación, la app se abre en el navegado
 
 ### Notificaciones push
 
-La app registra el token del teléfono en `tokens_push` al iniciar sesión, lo borra al cerrarla y abre la cita al tocar el aviso. El push solo llega en un APK de EAS (`eas.json`, perfil `preview`) con `projectId` y credenciales de FCM; los pasos están en el README.
+La app registra el token del teléfono en `tokens_push` al iniciar sesión, lo borra al cerrarla y abre la cita al tocar el aviso. El push solo llega en un APK de EAS (`eas.json`, perfil `preview`). Ya están el proyecto de EAS `@marlborovfx/app-citas-dr-bedoya`, el proyecto de Firebase `app-citas-dr-bedoya` (clave FCM V1 en las credenciales de EAS) y `google-services.json` como variable secreta de EAS; los detalles y el comando del build están en el README.
 
 Se conservan [CONTRIBUTING.md](../CONTRIBUTING.md), [AGENTS.md](../AGENTS.md) y el historial de la bitácora. `main` está protegida: los cambios entran por PR.
 
@@ -103,11 +103,11 @@ Referencia de código: `C:/Users/StivenM/Documents/react-native-parcial`, especi
 - [x] Integración con Supabase: Auth real, HTTP con Axios, RPC y datos compartidos entre teléfonos.
 - [x] Horario de atención (C08–C10) en Figma, base y app.
 - [x] Concurrencia entre citas y bloqueos en la base.
-- [x] Registro del token de push; falta el APK con EAS.
+- [x] Registro del token de push, proyecto de EAS, Firebase (FCM V1) y primer APK con EAS.
 - [x] Matriz académica, informe en borrador, guía de prueba con el cliente y bitácora hasta el PR #23.
 - [x] Ajustes de uso: ver contraseña, avisos separados en «Por ver» y «Vistos», skeleton de G01 en las listas, A00 Splash al abrir (también el splash nativo) y Nueva cita con Supabase.
 - [x] Versión web publicada en Vercel como plan B.
-- [ ] APK con EAS y prueba de push en un teléfono.
+- [ ] Prueba de push en un teléfono con el APK.
 - [ ] Prueba de punta a punta con cuentas reales y en Android (mapa, permisos y GPS incluidos); capturas.
 - [ ] Prueba con el cliente y al menos un ajuste derivado.
 - [ ] Observaciones del docente en la bitácora.
