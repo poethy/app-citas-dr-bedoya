@@ -35,7 +35,12 @@ export default function AgendarScreen({ paso }: { paso: 1 | 2 | 3 | 4 | 5 }) {
     data?.servicios.find((s) => s.id === borrador.servicioId)?.duracionMin ?? 0,
     'paciente',
   );
-  if (!data) return <Estado titulo="Cargando" cargando />;
+  if (!data)
+    return (
+      <Pantalla titulo="Agendar cita" menu>
+        <Estado titulo="Cargando servicios" cargando />
+      </Pantalla>
+    );
   const servicio = data.servicios.find((s) => s.id === borrador.servicioId);
   const cita = data.citas.find((c) => c.id === id && c.pacienteId === perfil?.id);
   if (paso === 5) {

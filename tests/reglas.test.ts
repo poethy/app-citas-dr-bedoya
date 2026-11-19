@@ -13,7 +13,7 @@ import {
   vencerSolicitudes,
   obtenerCita,
 } from '../src/services/mock/reglas';
-import { instante, HORA, MINUTO } from '../src/utils/fechas';
+import { instante, HORA, MINUTO, primeraMayuscula } from '../src/utils/fechas';
 import { validarNumero } from '../src/utils/validaciones';
 
 const fecha = '2026-11-19';
@@ -227,6 +227,14 @@ describe('Reglas por rol y vencimiento', () => {
     expect(() => obtenerCita(db, db.perfiles[0], 'inexistente')).toThrow(/encontramos/);
   });
 });
+describe('Textos de fecha', () => {
+  it('solo pone en mayúscula la primera letra', () => {
+    expect(primeraMayuscula('sábado, 21 de noviembre')).toBe('Sábado, 21 de noviembre');
+    expect(primeraMayuscula('noviembre de 2026')).toBe('Noviembre de 2026');
+    expect(primeraMayuscula('')).toBe('');
+  });
+});
+
 describe('Validaciones de campos', () => {
   it.each(['', 'texto', '-15', '0', '16', '181'])('rechaza duración %s', (v) =>
     expect(validarNumero(v, 'duracion')).not.toBeNull(),

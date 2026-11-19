@@ -60,7 +60,7 @@ export default function Bloqueos() {
         {consulta.isError ? (
           <Estado titulo="No pudimos cargar los horarios" accion={() => consulta.refetch()} />
         ) : (
-          <Estado titulo="Cargando horarios" cargando />
+          <Estado titulo="Cargando horarios" cargando forma="calendario" />
         )}
       </Pantalla>
     );

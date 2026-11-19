@@ -21,6 +21,13 @@ export function fechaTexto(valor: string, corta = false): string {
     },
   );
 }
+/**
+ * Primera letra en mayúscula y el resto igual: «sábado, 21 de noviembre» → «Sábado, 21 de noviembre».
+ * La clase `capitalize` de CSS pone en mayúscula cada palabra («21 De Noviembre»).
+ */
+export function primeraMayuscula(texto: string): string {
+  return texto.charAt(0).toLocaleUpperCase('es-CO') + texto.slice(1);
+}
 export function horaTexto(valor: string): string {
   return new Date(valor).toLocaleTimeString('es-CO', {
     timeZone: 'America/Bogota',

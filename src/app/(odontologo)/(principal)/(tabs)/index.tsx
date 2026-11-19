@@ -5,7 +5,7 @@ import { Estado, Icono, Opciones, Pantalla, Texto } from '@/components/ui';
 import CitaCard from '@/components/CitaCard';
 import AgendaSemana from '@/components/AgendaSemana';
 import { useAgendaStore } from '@/store/agenda.store';
-import { fechaLocal, fechaTexto, instante, sumarDias } from '@/utils/fechas';
+import { fechaLocal, fechaTexto, instante, primeraMayuscula, sumarDias } from '@/utils/fechas';
 export default function Agenda() {
   const { data } = useDatos();
   const { fecha, vista, setFecha, setVista } = useAgendaStore();
@@ -49,7 +49,9 @@ export default function Agenda() {
           >
             <Texto className="text-white text-xl">‹</Texto>
           </Pressable>
-          <Texto className="text-white text-center flex-1 capitalize">{fechaTexto(fecha)}</Texto>
+          <Texto className="text-white text-center flex-1">
+            {primeraMayuscula(fechaTexto(fecha))}
+          </Texto>
           <Pressable
             accessibilityLabel="Siguiente"
             className="p-3"
