@@ -17,6 +17,15 @@ vi.mock('expo-crypto', () => ({
   digestStringAsync: async (_: string, v: string) => createHash('sha256').update(v).digest('hex'),
   randomUUID,
 }));
+/**
+ * Un día de lunes a viernes a `desde` días o más, lejos de la agenda de ejemplo de la demo
+ * (que va en el primer día hábil desde pasado mañana), para no depender del día en que corren.
+ */
+function diaHabilLibre(desde: number): string {
+  let fecha = sumarDias(fechaLocal(), desde);
+  while ([0, 6].includes(instante(fecha, 720).getUTCDay())) fecha = sumarDias(fecha, 1);
+  return fecha;
+}
 async function repo() {
   return (await import('../src/services/mock/repositorio')).repositorio;
 }
@@ -52,8 +61,7 @@ describe('Repositorio persistente', () => {
   it('serializa dos registros en la misma franja', async () => {
     const r = await repo();
     await r.login('doctor@demo.com', 'Demo2026');
-    let fecha = sumarDias(fechaLocal(), 4);
-    if (instante(fecha, 720).getUTCDay() === 0) fecha = sumarDias(fecha, 1);
+    const fecha = diaHabilLibre(8);
     const datos = {
       servicioId: 'valoracion',
       inicio: instante(fecha, 480).toISOString(),
@@ -70,8 +78,7 @@ describe('Repositorio persistente', () => {
       const r = await repo();
       const paciente = pacienteNuevaCitaSchema.parse({ nombre: ' Ana Gómez ', telefono });
       await r.login('doctor@demo.com', 'Demo2026');
-      let fecha = sumarDias(fechaLocal(), 4);
-      if (instante(fecha, 720).getUTCDay() === 0) fecha = sumarDias(fecha, 1);
+      const fecha = diaHabilLibre(8);
       const datos = {
         servicioId: 'resina',
         inicio: instante(fecha, 480).toISOString(),
@@ -129,8 +136,7 @@ describe('Repositorio persistente', () => {
   it('la reprogramación del paciente reaplica aprobación y conserva valores históricos', async () => {
     const r = await repo();
     await r.login('ana@demo.com', 'Demo2026');
-    let dia = sumarDias(fechaLocal(), 5);
-    if (instante(dia, 720).getUTCDay() === 0) dia = sumarDias(dia, 1);
+    const dia = diaHabilLibre(9);
     const cita = await r.crearCita({
       servicioId: 'resina',
       inicio: instante(dia, 480).toISOString(),
