@@ -4,7 +4,7 @@ App móvil para gestionar citas del consultorio del Dr. Camilo Bedoya Orozco en 
 
 ## Estado y alcance actual
 
-Frontend implementado con React Native, TypeScript y Expo SDK 58. Incluye navegación por rol, agendamiento, citas, solicitudes, agenda diaria/semanal, servicios, anticipaciones, bloqueos, avisos y mapa.
+App implementada con React Native, TypeScript y Expo SDK 58, conectada a Supabase. Incluye navegación por rol, agendamiento, citas, solicitudes, agenda diaria/semanal, servicios, anticipaciones, bloqueos, horario de atención, avisos (también push) y mapa.
 
 La app tiene dos modos, según exista o no el `.env`:
 
@@ -24,10 +24,11 @@ Consulta [CONTRIBUTING.md](CONTRIBUTING.md) para ramas y revisiones, y [AGENTS.m
 - Las solicitudes pendientes vencen al llegar la hora de inicio y ya no se pueden aprobar.
 - Las citas conservan precio y duración acordados, incluso al editar el catálogo o reprogramar. El pago se realiza en el consultorio.
 - La disponibilidad se calcula por tramos libres de una fecha, sin unir huecos que no permiten una cita completa.
+- El odontólogo edita su horario de atención y el almuerzo (C08). Si un cambio deja citas activas fuera del horario, no se guarda y C10 lista esas citas para cancelarlas o reprogramarlas.
 
 ## Tecnologías
 
-React Native, TypeScript, Expo SDK 58 como objetivo, Expo Router, NativeWind de clase, Zustand, TanStack Query, AsyncStorage y OpenStreetMap/Leaflet con WebView y expo-location. Axios para el contrato HTTP futuro. Backend previsto: Supabase Auth, PostgreSQL, RLS, RPC y Edge Functions. Las versiones instaladas están en package.json y package-lock.json y se comprobaron con expo install --check.
+React Native, TypeScript, Expo SDK 58, Expo Router, NativeWind de clase, Zustand, TanStack Query, Axios, AsyncStorage (demo local), OpenStreetMap/Leaflet con WebView y expo-location, y expo-notifications. Backend: Supabase Auth, PostgreSQL, RLS, RPC, pg_cron y Edge Functions. Las versiones instaladas están en package.json y package-lock.json y se comprobaron con expo install --check.
 
 Estilo de referencia: C:/Users/StivenM/Documents/react-native-parcial. Prioridad a código legible, componentes pequeños, interfaces y separación de hooks y servicios.
 
@@ -39,15 +40,19 @@ Estilo de referencia: C:/Users/StivenM/Documents/react-native-parcial. Prioridad
 | [Requerimientos PDF](docs/requerimientos_funcionales_app_citasFinal%20%28actualizado%29.pdf) | RF-01 a RF-30 consolidados y criterios de aceptación. |
 | [Fuente editable de requerimientos](docs/requerimientos.md) | Contenido utilizado para generar el PDF. |
 | [Especificaciones técnicas](docs/especificaciones-tecnicas.md) | Parte I frontend; Parte II backend y contrato de integración. |
-| [Handoff](docs/Handoff_App_Citas.md) | Decisiones, ajustes de Figma para código y próximos pasos. |
-| [Backend Supabase](supabase/README.md) | Migraciones, pruebas y despliegue recibidos de main; integración pendiente con la demo. |
-| [Pantallas y datos](docs/pantallas-y-datos.md) | Contrato de datos por pantalla para integrar el backend. |
+| [Handoff](docs/Handoff_App_Citas.md) | Estado del proyecto, decisiones y próximos pasos. |
+| [Backend Supabase](supabase/README.md) | Migraciones (todas aplicadas), pruebas de la base, datos de prueba y push. |
+| [Pantallas y datos](docs/pantallas-y-datos.md) | Qué lee y qué escribe cada pantalla. |
+| [Matriz de requisitos](docs/matriz-requisitos.md) | RF-01 a RF-30 y requisitos académicos con archivo y evidencia. |
+| [Informe](docs/informe.md) | Borrador del informe de la entrega final. |
+| [Prueba con el cliente](docs/prueba-con-cliente.md) | Tareas y plantilla para registrar la prueba de uso. |
+| [Bitácora](docs/bitacora.md) | Avances por fecha y PR. |
 
-Proyecto_Final_Movil_II.docx se conserva sin modificaciones. Datos_ejemplo_wireframes.md no está disponible en el árbol de trabajo y no se requiere para leer estos documentos.
+Proyecto_Final_Movil_II.docx se conserva sin modificaciones. [Datos_ejemplo_wireframes.md](docs/Datos_ejemplo_wireframes.md) reúne los datos de ejemplo que comparten el Figma, el seed y las pruebas.
 
 ## Diseño vigente
 
-Se implementó desde [Flujo de navegación en Figma](https://www.figma.com/design/nyTAxFuw0CJ5hxoIqvsAIk?node-id=2012-2), incorporando en código los ajustes funcionales acordados. Figma no fue modificado.
+Se implementó desde [Flujo de navegación en Figma](https://www.figma.com/design/nyTAxFuw0CJ5hxoIqvsAIk?node-id=2012-2), incorporando en código los ajustes funcionales acordados. Después se agregaron al Figma C08–C10 (horario de atención, alta fidelidad y carril 7 del flujo) y C05 en alta fidelidad con el diseño de línea de tiempo.
 
 ## Ejecución
 
@@ -65,7 +70,7 @@ Para usar Supabase, copia `.env.template` como `.env` y llena `EXPO_PUBLIC_SUPAB
 Con Supabase:
 
 - **Odontólogo:** la cuenta se crea una sola vez (ver `supabase/README.md` y `supabase/crear_odontologo.sql`).
-- **Pacientes:** se registran desde la app. Para que entren sin confirmar el correo, desactiva «Confirm email» en Supabase → Authentication → Providers → Email.
+- **Pacientes:** se registran desde la app. Para que entren sin confirmar el correo, desactiva «Confirm email» en Supabase → Authentication → Sign In / Providers → Email.
 - **Datos de prueba para presentar:** corre `supabase/datos_prueba.sql` en el SQL Editor. Crea una agenda de ejemplo en los próximos días hábiles y pone coordenadas de prueba del consultorio. Se puede repetir antes de cada presentación.
 
 ### Notificaciones push (avisos con la app cerrada)
@@ -88,7 +93,21 @@ Pasos (una sola vez, con la cuenta de Expo del equipo):
 
 El login tiene botones para completar estos datos. El registro crea pacientes locales: utiliza datos ficticios y una contraseña exclusiva para la demo. Se guarda un hash de la contraseña de prueba; esto no constituye autenticación de producción.
 
-### Recorrido para probar
+### Recorrido con Supabase (con `.env`)
+
+Lo ideal es usar dos teléfonos (o un teléfono y el navegador) para comprobar que los datos se comparten. Antes, corre `supabase/datos_prueba.sql` para tener una agenda de ejemplo.
+
+1. **Paciente:** «Crear cuenta» con datos ficticios. Entra directo si «Confirm email» está desactivado.
+2. **Paciente:** Agendar → Resina → una fecha → una franja libre → «Enviar solicitud». Queda en Mis citas → Pendientes. Las franjas ocupadas por otros pacientes no aparecen.
+3. **Odontólogo (otro teléfono):** iniciar sesión. En Agenda se ve la agenda de prueba; en Solicitudes, la Resina del paciente. Aprobarla.
+4. **Paciente:** la cita pasa a confirmada y llega el aviso «Tu cita fue confirmada» (push solo con el APK de EAS; en Expo Go se ve en Avisos).
+5. **Paciente:** intentar cancelar una cita con menos de la anticipación configurada → M06 con las horas vigentes.
+6. **Odontólogo:** Nueva cita para un paciente que llamó (nombre y celular) → queda confirmada. Bloquear horarios sobre una cita → C06.
+7. **Odontólogo:** Menú → Horario de atención. Apagar el día que tiene citas y «Guardar» → C10 lista esas citas; tocar una abre su detalle. Volver a encenderlo.
+8. **Odontólogo:** editar el precio de un servicio; las citas existentes conservan el precio acordado.
+9. **Paciente:** Mapa → permitir ubicación → ver el consultorio y la posición propia; pausar y reanudar el seguimiento.
+
+### Recorrido en la demo local (sin `.env`)
 
 1. Entrar como paciente y abrir Agendar. Elegir Resina o Endodoncia, una fecha y una franja futura válida. El resumen debe mostrar el servicio, duración, precio y Enviar solicitud.
 2. Consultar Mis citas → Pendientes. Cerrar y abrir la app para comprobar que permanece.
@@ -102,7 +121,7 @@ Los datos iniciales se crean únicamente si no hay almacenamiento previo. Las fe
 
 ### Organización y verificaciones
 
-Las rutas están en src/app. Componentes, pantallas, hooks, servicios, modelos, mappers, stores y utilidades tienen carpetas separadas. El repositorio mock y sus reglas están en src/services/mock; Axios y los tipos externos quedan preparados para integrar el backend.
+Las rutas están en src/app. Componentes, pantallas, hooks, servicios, modelos, mappers, stores y utilidades tienen carpetas separadas. `src/services/repositorio.ts` elige el servicio: `src/services/remoto` (Supabase con Axios) o `src/services/mock` (demo local). Las pruebas de la base están en `supabase/pruebas` (`cd supabase/pruebas && npm test`).
 
 ```bash
 npm run typecheck
@@ -113,12 +132,12 @@ npx expo export --platform web
 npx expo export --platform android
 ```
 
-Consulta [matriz de requisitos](docs/matriz-requisitos.md) y [bitácora](docs/bitacora.md). No se ha generado un APK ni probado un teléfono Android real en esta sesión.
+Consulta [matriz de requisitos](docs/matriz-requisitos.md) y [bitácora](docs/bitacora.md). Pendiente: generar el APK con EAS y probar en un teléfono Android real.
 
 ### Límites conocidos
 
-- El teléfono y las coordenadas exactas del consultorio están pendientes. El mapa identifica el marcador como una referencia del centro de Pereira, sin presentarlo como posición verificada. Los horarios y precios son de ejemplo.
-- Los avisos y recordatorios son locales. Los recordatorios se calculan al consultar/volver a la app y durante su uso; no se promete entrega con la app cerrada. El resumen diario se muestra en Avisos del doctor. No se implementaron push, cron ni servidor.
-- El mapa requiere Internet para Leaflet y las teselas. Las operaciones de la demo se guardan localmente; un escenario simulado de conexión no representa sincronización remota.
-- Las guardias de navegación y los hashes de demo no ofrecen seguridad de servidor. No usar datos personales reales.
+- Las coordenadas, el teléfono, los horarios y los precios del consultorio son de prueba (`supabase/datos_prueba.sql`) hasta que el consultorio confirme los reales. El mapa los lee de `configuracion`.
+- Los avisos push solo llegan en un APK de EAS con `projectId` y credenciales de FCM. En Expo Go y en la web los avisos se ven al abrir la app.
+- El mapa requiere Internet para Leaflet y las teselas. No calcula rutas: muestra el consultorio y la ubicación del paciente.
+- En la demo local las guardias y los hashes de contraseña no ofrecen seguridad de servidor; no usar datos personales reales.
 - npm audit detecta alertas transitivas en herramientas de patrones y compilación. Las soluciones automáticas propuestas cambian versiones mayores o degradan Expo; no se aplicó audit fix --force. Revisar actualizaciones compatibles antes de producción.
