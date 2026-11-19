@@ -91,17 +91,44 @@ export function Campo({
   label,
   error,
   ayuda,
+  secureTextEntry,
   ...props
 }: TextInputProps & { label: string; error?: string; ayuda?: string }) {
+  // Con secureTextEntry el campo trae un botón para mostrar u ocultar la contraseña
+  const [visible, setVisible] = useState(false);
+  const borde = error ? 'border-danger' : 'border-line';
   return (
     <View className="gap-1.5">
       <Texto className="font-medium text-xs">{label}</Texto>
-      <TextInput
-        {...props}
-        accessibilityLabel={label}
-        placeholderTextColor="#9aa1ae"
-        className={`bg-white border rounded-xl px-4 min-h-[52px] py-3 font-regular text-sm text-navy-900 ${error ? 'border-danger' : 'border-line'}`}
-      />
+      {secureTextEntry ? (
+        <View className={`flex-row items-center bg-white border rounded-xl min-h-[52px] ${borde}`}>
+          <TextInput
+            {...props}
+            secureTextEntry={!visible}
+            autoCapitalize="none"
+            autoCorrect={false}
+            accessibilityLabel={label}
+            placeholderTextColor="#9aa1ae"
+            className="flex-1 px-4 py-3 font-regular text-sm text-navy-900"
+          />
+          <Pressable
+            accessibilityRole="button"
+            accessibilityLabel={visible ? 'Ocultar contraseña' : 'Mostrar contraseña'}
+            onPress={() => setVisible((v) => !v)}
+            hitSlop={8}
+            className="w-12 h-[52px] items-center justify-center active:opacity-60"
+          >
+            <Icono nombre={visible ? 'ojoCerrado' : 'ojo'} size={20} />
+          </Pressable>
+        </View>
+      ) : (
+        <TextInput
+          {...props}
+          accessibilityLabel={label}
+          placeholderTextColor="#9aa1ae"
+          className={`bg-white border rounded-xl px-4 min-h-[52px] py-3 font-regular text-sm text-navy-900 ${borde}`}
+        />
+      )}
       {error || ayuda ? (
         <Texto className={`text-xs ${error ? 'text-danger' : 'text-muted'}`}>
           {error || ayuda}
@@ -127,6 +154,95 @@ export function ErrorAviso({ error }: { error: unknown }) {
     </View>
   ) : null;
 }
+/**
+ * G01: silueta de la pantalla mientras cargan los datos, en lugar de una rueda de carga.
+ * Pulsa suavemente; con «reducir movimiento» activado queda quieta. El lector de
+ * pantalla anuncia el título («Cargando citas»).
+ */
+export function Esqueleto({ titulo }: { titulo: string }) {
+  const reducirMovimiento = useReducedMotion();
+  const [pulso] = useState(() => new Animated.Value(0.65));
+  useEffect(() => {
+    if (reducirMovimiento) return;
+    const animacion = Animated.loop(
+      Animated.sequence([
+        Animated.timing(pulso, {
+          toValue: 1,
+          duration: 700,
+          easing: Easing.inOut(Easing.ease),
+          useNativeDriver: Platform.OS !== 'web',
+        }),
+        Animated.timing(pulso, {
+          toValue: 0.65,
+          duration: 700,
+          easing: Easing.inOut(Easing.ease),
+          useNativeDriver: Platform.OS !== 'web',
+        }),
+      ]),
+    );
+    animacion.start();
+    return () => animacion.stop();
+  }, [pulso, reducirMovimiento]);
+  const barra = (ancho: `${number}%`, alto = 12) => (
+    <View style={{ width: ancho, height: alto }} className="bg-[#dbe3ee] rounded-md" />
+  );
+  return (
+    <View
+      accessible
+      accessibilityRole="progressbar"
+      accessibilityLabel={titulo}
+      className="flex-1 p-4 bg-navy-50"
+    >
+      <Animated.View style={{ opacity: pulso, gap: 16 }}>
+        <View className="flex-row items-center gap-3">
+          <View className="w-11 h-11 rounded-full bg-[#dbe3ee]" />
+          {barra('45%', 18)}
+        </View>
+        {barra('70%')}
+        {[0, 1, 2].map((i) => (
+          <View
+            key={i}
+            className="bg-white rounded-[18px] p-4 gap-2.5"
+            style={{ boxShadow: '0px 4px 16px rgba(11,31,58,0.06)' }}
+          >
+            {barra('35%', 10)}
+            {barra('80%', 14)}
+            {barra('55%', 10)}
+          </View>
+        ))}
+      </Animated.View>
+    </View>
+  );
+}
+/** Entrada suave (aparece y sube 8 px). Sin animación si el teléfono pide reducir movimiento. */
+export function Aparecer({ children, retraso = 0 }: PropsWithChildren<{ retraso?: number }>) {
+  const reducirMovimiento = useReducedMotion();
+  const [progreso] = useState(() => new Animated.Value(reducirMovimiento ? 1 : 0));
+  useEffect(() => {
+    if (reducirMovimiento) return;
+    const animacion = Animated.timing(progreso, {
+      toValue: 1,
+      duration: 220,
+      delay: Math.min(retraso, 300),
+      easing: Easing.out(Easing.cubic),
+      useNativeDriver: Platform.OS !== 'web',
+    });
+    animacion.start();
+    return () => animacion.stop();
+  }, [progreso, reducirMovimiento, retraso]);
+  return (
+    <Animated.View
+      style={{
+        opacity: progreso,
+        transform: [
+          { translateY: progreso.interpolate({ inputRange: [0, 1], outputRange: [8, 0] }) },
+        ],
+      }}
+    >
+      {children}
+    </Animated.View>
+  );
+}
 export function Estado({
   titulo,
   detalle,
@@ -140,15 +256,12 @@ export function Estado({
   label?: string;
   cargando?: boolean;
 }) {
+  if (cargando) return <Esqueleto titulo={titulo} />;
   return (
     <View className="flex-1 items-center justify-center p-6 gap-4 min-h-[220px]">
-      {cargando ? (
-        <ActivityIndicator size="large" color="#0b1f3a" />
-      ) : (
-        <View className="rounded-full p-5 bg-navy-100">
-          <Icono nombre="inbox" size={30} />
-        </View>
-      )}
+      <View className="rounded-full p-5 bg-navy-100">
+        <Icono nombre="inbox" size={30} />
+      </View>
       <Texto className="font-semibold text-lg text-center">{titulo}</Texto>
       {detalle ? <Texto className="text-muted text-center text-xs">{detalle}</Texto> : null}
       {accion ? (

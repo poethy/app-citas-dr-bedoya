@@ -10,17 +10,38 @@ import { repositorio } from '@/services/repositorio';
 import { useAgendaStore } from '@/store/agenda.store';
 import { MAX_CARACTERES_TELEFONO_CITA, pacienteNuevaCitaSchema } from '@/utils/validaciones';
 export default function NuevaCita() {
-  const { data } = useDatos();
+  const consulta = useDatos();
+  const data = consulta.data;
   const [nombre, setNombre] = useState(''),
     [telefono, setTelefono] = useState(''),
-    [servicioId, setServicio] = useState('valoracion'),
+    [servicioElegido, setServicio] = useState(''),
     [fecha, setFecha] = useState(fechaLocal()),
     [inicio, setInicio] = useState('');
   const [intentoRegistrar, setIntentoRegistrar] = useState(false);
   const accion = useAccion(repositorio.crearCita, 'Cita registrada y confirmada.');
-  const servicio = data?.servicios.find((s) => s.id === servicioId);
+  // Sin elegir todavía (o si el elegido ya no está activo) se usa el primer servicio activo.
+  // Antes arrancaba con el id de la demo ('valoracion'), que no existe en Supabase.
+  const activos = data?.servicios.filter((s) => s.activo) ?? [];
+  const servicio = activos.find((s) => s.id === servicioElegido) ?? activos[0];
+  const servicioId = servicio?.id ?? '';
   const { franjas } = useFranjasDisponibles(fecha, servicio?.duracionMin ?? 0, 'odontologo');
-  if (!data || !servicio) return <Estado titulo="Cargando servicios" cargando />;
+  if (!data)
+    return consulta.isError ? (
+      <Pantalla titulo="Nueva cita" menu>
+        <Estado titulo="No pudimos cargar los servicios" accion={() => consulta.refetch()} />
+      </Pantalla>
+    ) : (
+      <Estado titulo="Cargando servicios" cargando />
+    );
+  if (!servicio)
+    return (
+      <Pantalla titulo="Nueva cita" menu>
+        <Estado
+          titulo="No hay servicios activos"
+          detalle="Activa al menos un servicio en Servicios y confirmación para registrar citas."
+        />
+      </Pantalla>
+    );
 
   const paciente = pacienteNuevaCitaSchema.safeParse({ nombre, telefono });
   const errores = intentoRegistrar && !paciente.success ? paciente.error.flatten().fieldErrors : {};
@@ -84,9 +105,10 @@ export default function NuevaCita() {
           setServicio(v);
           setInicio('');
         }}
-        opciones={data.servicios
-          .filter((s) => s.activo)
-          .map((s) => ({ valor: s.id, label: `${s.nombre} · ${s.duracionMin} min` }))}
+        opciones={activos.map((s) => ({
+          valor: s.id,
+          label: `${s.nombre} · ${s.duracionMin} min`,
+        }))}
       />
       <Texto className="text-xs font-medium">Fecha</Texto>
       {errorHorario && (
