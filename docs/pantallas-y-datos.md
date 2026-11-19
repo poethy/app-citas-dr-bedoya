@@ -68,7 +68,7 @@ Se revisó contra los textos de las 58 pantallas de alta fidelidad el 17 de novi
 | C02 / C03 Editar servicio | `servicios/[id].tsx` | `servicios?id=eq.{id}` + `horario_atencion` y `bloqueos_recurrentes` para la capacidad | `PATCH servicios` (nombre, precio, duración, confirmación) |
 | C04 Anticipación | `anticipacion.tsx` | `configuracion` | `PATCH configuracion` (`anticipacion_agendar_horas`, `anticipacion_cambios_horas`, de 1 a 72) |
 | C05 / C06 / C07 Bloqueos | `bloqueos.tsx` | Citas del día con paciente, `bloqueos` (con `motivo`, p. ej. «Ausencia»), `bloqueos_recurrentes` | RPC `crear_bloqueo(inicio, fin, motivo)`; `CHOQUE_CON_CITA` → C06. Desbloquear: `DELETE bloqueos?id=eq.{id}` |
-| C08 / C09 / C10 Horario de atención | `horario.tsx` | `horario_atencion` (un día sin fila = cerrado) y `bloqueos_recurrentes` con `motivo = 'Almuerzo'` | C08: interruptor por día (abierto o cerrado) y almuerzo. C09: hoja para elegir la hora de apertura y de cierre de un día; la app valida que el cierre sea posterior a la apertura. «Guardar» → RPC `actualizar_horario(dias, almuerzo)` (pendiente, ver B9 de la especificación); si alguna cita activa futura queda fuera del nuevo horario, la RPC devuelve `CITAS_FUERA_DE_HORARIO` → C10 |
+| C08 / C09 / C10 Horario de atención | `horario.tsx` | `horario_atencion` (un día sin fila = cerrado) y `bloqueos_recurrentes` con `motivo = 'Almuerzo'` | C08: interruptor por día (abierto o cerrado) y almuerzo. C09: hoja para elegir la hora de apertura y de cierre de un día; la app valida que el cierre sea posterior a la apertura. «Guardar» → RPC `actualizar_horario(dias, almuerzo)`; si alguna cita activa futura queda fuera del nuevo horario, la RPC devuelve `CITAS_FUERA_DE_HORARIO` con la lista de citas → C10 las muestra y cada una abre su detalle |
 | O12 Cerrar sesión | modal | — | `supabase.auth.signOut` → A01 |
 
 ## Estados globales
@@ -88,6 +88,6 @@ Se revisó contra los textos de las 58 pantallas de alta fidelidad el 17 de novi
 | O04 | Pestaña «Aprobadas» | `citas.respondida_en` |
 | P05, O03, S06, S07, M03, mapa | Nombre del doctor, especialidad, «Consultorio 201, Ed. Torcoroma», «Calle 18 # 5-27, Pereira» | `configuracion.nombre_profesional`, `especialidad`, `lugar`, `direccion` |
 | C04 | Mínimo 1 h, máximo 72 h | Restricción `between 1 and 72` |
-| C08 | El odontólogo edita su horario y el almuerzo | Ninguna en las tablas (ya existen y el odontólogo puede escribirlas). Falta la RPC `actualizar_horario` en una migración nueva (B9 de la especificación) |
+| C08 | El odontólogo edita su horario y el almuerzo | Ninguna en las tablas (ya existen y el odontólogo puede escribirlas). RPC `actualizar_horario` |
 | P04 | Editar nombre y teléfono | Trigger que actualiza también la ficha del paciente |
 | P03, O11 | «Jue 19 nov, 11:00 a. m.» y «Resumen del día · jueves 19 — 4 citas confirmadas y 1 pendiente · Primera cita…» | Formato de fechas en español en los avisos, sin depender del idioma del servidor |

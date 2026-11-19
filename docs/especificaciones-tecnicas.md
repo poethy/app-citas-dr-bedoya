@@ -25,7 +25,7 @@ SDK 58 es una exigencia del proyecto; antes de instalar se comprobará su dispon
 - Cada cita conserva el precio en COP y la duración acordados al crearla. Editar el catálogo afecta citas nuevas, sin recalcular las existentes. Reprogramar conserva esos valores; el nuevo fin se calcula con la duración guardada.
 - La disponibilidad se calcula por tramos libres de una fecha concreta, sin sumar huecos separados para encajar una cita. Los mensajes muestran la anticipación configurada, no un texto fijo de 24 horas.
 - La información del consultorio continúa siendo de solo lectura. El catálogo permite configurar nombre, precio, duración y tipo de confirmación.
-- El odontólogo configura el horario de atención en C08: qué días abre, la hora de apertura y de cierre de cada día, y el almuerzo. El cierre debe ser posterior a la apertura (C09). Cambiar el horario no mueve ninguna cita; si una cita pendiente o confirmada futura quedaría fuera del nuevo horario o cruzaría el almuerzo, no se guarda y se muestra C10 (propuesta por confirmar, ver B9).
+- El odontólogo configura el horario de atención en C08: qué días abre, la hora de apertura y de cierre de cada día, y el almuerzo. El cierre debe ser posterior a la apertura (C09). Cambiar el horario no mueve ninguna cita; si una cita pendiente o confirmada futura quedaría fuera del nuevo horario o cruzaría el almuerzo, no se guarda y C10 muestra la lista de esas citas para cancelarlas o reprogramarlas (decidido).
 
 ### F2.1 Servicio mock y persistencia de la demo
 
@@ -426,7 +426,7 @@ Todas las RPC verifican autenticación, rol, propiedad y parámetros; fijan un s
 | `responder_solicitud(cita_id, aprobar)` | Solo doctor, solo pendiente y `ahora < inicio`. Con `ahora >= inicio`, persistir vencida y devolver `SOLICITUD_VENCIDA` sin aprobar. Rechazar y aprobar generan estados y avisos diferentes. |
 | `vencer_solicitudes()` | Operación interna idempotente: pendientes con `inicio <= ahora` pasan a vencida. Aviso asociado una sola vez; no modifica citas confirmadas. |
 | `crear_bloqueo(inicio, fin, motivo)` | Solo doctor. Rechaza cruce con citas activas y otros bloqueos, dentro de la transacción común de ocupación. |
-| `actualizar_horario(dias, almuerzo)` | Solo doctor. Reemplaza en una transacción las filas de `horario_atencion` (un día sin fila queda cerrado) y los bloqueos recurrentes con motivo «Almuerzo». Rechaza con `CITAS_FUERA_DE_HORARIO` si una cita pendiente o confirmada futura queda fuera del nuevo horario o cruza el almuerzo. Bloquea la tabla de citas mientras revisa. Valida que cada cierre sea posterior a su apertura y que no haya días repetidos (`HORARIO_INVALIDO`). Migración `…_actualizar_horario.sql`. |
+| `actualizar_horario(dias, almuerzo)` | Solo doctor. Reemplaza en una transacción las filas de `horario_atencion` (un día sin fila queda cerrado) y los bloqueos recurrentes con motivo «Almuerzo». Si alguna cita pendiente o confirmada futura queda fuera del nuevo horario o cruza el almuerzo, no guarda nada y responde `CITAS_FUERA_DE_HORARIO`; el detalle es un JSON con todas esas citas (`id`, `paciente`, `inicio`; hasta 50, en orden). Valida que cada cierre sea posterior a su apertura y que no haya días repetidos (`HORARIO_INVALIDO`). Bloquea la tabla de citas mientras revisa. |
 
 El error SOLICITUD_VENCIDA debe comunicarse sin deshacer la escritura del vencimiento: devolver un resultado de negocio, o resolver el vencimiento en una transacción independiente antes del error. No actualizar a vencida y luego lanzar una excepción que revierta ese cambio. **Implementado así:** `responder_solicitud` guarda la cita como vencida y la devuelve sin lanzar error; la app ve `estado = 'vencida'` y muestra el mensaje de `SOLICITUD_VENCIDA`. `cancelar_cita` y `reprogramar_cita` responden `ESTADO_INVALIDO` si la cita ya empezó o venció. `vencer_solicitudes()` corre cada minuto con pg_cron.
 
@@ -503,7 +503,7 @@ supabase-js se usa **solo para Auth**: registro, login, logout, sesión y escuch
 | `CHOQUE_CON_CITA` | `crear_bloqueo` | «Hay una cita en esa franja. Cancélala o reprográmala primero.» | C06 |
 | `FUERA_DE_HORARIO` | RPC | «Ese horario está fuera de la atención del consultorio.» | — |
 | `HORARIO_INVALIDO` | `actualizar_horario` | «La hora de cierre debe ser posterior a la de apertura.» | C09 |
-| `CITAS_FUERA_DE_HORARIO` | `actualizar_horario` | «Hay citas que quedarían fuera del nuevo horario. Cancélalas o reprográmalas antes de guardar.» La hoja nombra la primera cita afectada | C10 |
+| `CITAS_FUERA_DE_HORARIO` | `actualizar_horario` | «Hay {n} citas que quedarían fuera del nuevo horario. Cancélalas o reprográmalas antes de guardar.» C10 las lista; tocar una abre su detalle | C10 |
 | `FUERA_DE_ANTICIPACION` | `solicitar_cita` | «Las citas se agendan con al menos {horas} h de anticipación.» | S03 |
 | `NO_AUTORIZADO` | RLS / RPC | Pantalla de acceso denegado | G04 |
 | `SIN_CONEXION` | Axios sin respuesta | «Sin conexión. Revisa tu internet e intenta de nuevo.» | G02 |
@@ -558,7 +558,6 @@ El frontend entrega modelos, interfaces de respuesta, mappers, firmas de servici
 ### B9 Pendientes que no cambian las decisiones cerradas
 
 - Confirmar horario, almuerzo, servicios, precios, teléfono y coordenadas reales del consultorio.
-- C08 Horario de atención: confirmar con el equipo que un cambio de horario se rechaza si deja citas activas fuera (C10, igual que C06). La RPC `actualizar_horario` ya está aplicada en Supabase.
 - Coordenadas, teléfono y datos reales del consultorio: hoy hay valores de prueba (`supabase/datos_prueba.sql`). Al tenerlos, basta con actualizar `configuracion`; el mapa los lee de ahí.
 - Registrar el token de Expo Push del dispositivo en `tokens_push` para recibir los avisos con la app cerrada.
 - Contrastar con el backend existente los recordatorios cada 15 minutos, el resumen diario a las 8:00 a. m. de Bogotá y el envío por Expo Push; registrar tokens y probar un development build de Android.

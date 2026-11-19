@@ -206,3 +206,24 @@ set request.jwt.claim.sub = '00000000-0000-0000-0000-0000000000d1';
 select prueba.probar('B3 con el candado se sigue rechazando el bloqueo sobre una cita', $$ select public.crear_bloqueo('2026-11-19 14:30-05', '2026-11-19 15:00-05', 'Reunión') $$, 'CHOQUE_CON_CITA');
 select prueba.probar('B3 y se sigue rechazando la cita sobre un bloqueo', $$ select public.registrar_cita_consultorio('Pedro Gil', '311 222 3344', (select id from public.servicios where nombre='Valoración general'), '2026-11-19 16:45-05') $$, 'HORARIO_NO_DISPONIBLE');
 reset role;
+
+-- ===== C10: el error trae todas las citas afectadas =====
+set role authenticated;
+set request.jwt.claim.sub = '00000000-0000-0000-0000-0000000000d1';
+select prueba.probar('C10 el detalle trae todas las citas afectadas (JSON, en orden)', $$ do $x$
+declare d text; lista jsonb;
+begin
+  begin
+    -- Solo el viernes abierto: todas las citas activas del jueves quedan fuera
+    perform public.actualizar_horario('[{"dia_semana":5,"hora_inicio":"08:00","hora_fin":"18:00"}]', null);
+    raise exception 'no rechazó';
+  exception when others then
+    if sqlerrm <> 'CITAS_FUERA_DE_HORARIO' then raise; end if;
+    get stacked diagnostics d = pg_exception_detail;
+  end;
+  lista := d::jsonb;
+  if jsonb_array_length(lista) < 3 then raise exception 'solo % citas', jsonb_array_length(lista); end if;
+  if lista -> 0 ->> 'id' is null or lista -> 0 ->> 'paciente' is null or lista -> 0 ->> 'inicio' is null then raise exception 'faltan datos: %', lista -> 0; end if;
+  if (lista -> 0 ->> 'inicio')::timestamptz > (lista -> 1 ->> 'inicio')::timestamptz then raise exception 'no están en orden'; end if;
+end $x$ $$);
+reset role;
