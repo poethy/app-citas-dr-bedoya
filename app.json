@@ -21,7 +21,15 @@
           "color": "#0b1f3a"
         }
       ],
-      "expo-splash-screen"
+      [
+        "expo-splash-screen",
+        {
+          "backgroundColor": "#0b1f3a",
+          "image": "./assets/imagenes/splash-monograma.png",
+          "imageWidth": 150,
+          "resizeMode": "contain"
+        }
+      ]
     ],
     "android": {
       "package": "com.drbedoya.citas"
