@@ -38,7 +38,7 @@ export default function DetalleCitaScreen({ solicitud = false }: { solicitud?: b
   if (consultaCita.isPending)
     return (
       <Pantalla titulo="Detalle de la cita">
-        <Estado titulo="Cargando cita" cargando />
+        <Estado titulo="Cargando cita" cargando forma="detalle" />
       </Pantalla>
     );
   if (consultaCita.isError)

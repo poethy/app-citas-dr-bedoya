@@ -154,12 +154,151 @@ export function ErrorAviso({ error }: { error: unknown }) {
     </View>
   ) : null;
 }
+/** Forma del skeleton: la de la pantalla que va a aparecer. */
+export type FormaEsqueleto = 'lista' | 'detalle' | 'dias' | 'calendario' | 'formulario';
+
+const sombraTarjeta = { boxShadow: '0px 4px 16px rgba(11,31,58,0.06)' };
+function Barra({ ancho, alto = 12 }: { ancho: `${number}%` | number; alto?: number }) {
+  return <View style={{ width: ancho, height: alto }} className="bg-[#dbe3ee] rounded-md" />;
+}
+function TarjetaEsqueleto({ children, className = '' }: PropsWithChildren<{ className?: string }>) {
+  return (
+    <View className={`bg-white rounded-[18px] ${className}`} style={sombraTarjeta}>
+      {children}
+    </View>
+  );
+}
+
+/** G01: tarjetas de lista con un bloque y tres barras (Mis citas, servicios). */
+function EsqueletoLista() {
+  return (
+    <>
+      {[0, 1, 2, 3].map((i) => (
+        <TarjetaEsqueleto key={i} className="flex-row items-center px-4 py-3.5 gap-3.5">
+          <View className="w-14 h-16 rounded-xl bg-[#dbe3ee]" />
+          <View className="flex-1 gap-2">
+            <Barra ancho="90%" />
+            <Barra ancho="65%" alto={10} />
+            <Barra ancho="45%" alto={10} />
+          </View>
+        </TarjetaEsqueleto>
+      ))}
+    </>
+  );
+}
+
+/** Detalle de cita: estado, paciente y filas con ícono (servicio, fecha, hora…). */
+function EsqueletoDetalle() {
+  return (
+    <TarjetaEsqueleto className="p-4 gap-4">
+      <View className="gap-2">
+        <View className="w-24 h-6 rounded-full bg-[#dbe3ee]" />
+        <Barra ancho="25%" alto={10} />
+        <Barra ancho="55%" alto={18} />
+      </View>
+      {[0, 1, 2, 3, 4, 5].map((i) => (
+        <View key={i} className="flex-row items-center gap-3">
+          <View className="w-9 h-9 rounded-xl bg-[#dbe3ee]" />
+          <View className="flex-1 gap-1.5">
+            <Barra ancho="25%" alto={9} />
+            <Barra ancho={i % 2 ? '55%' : '70%'} />
+          </View>
+        </View>
+      ))}
+    </TarjetaEsqueleto>
+  );
+}
+
+/** C08: un renglón por día con su horario y el interruptor. */
+function EsqueletoDias() {
+  return (
+    <>
+      <Barra ancho="80%" alto={10} />
+      {[0, 1, 2, 3, 4, 5, 6].map((i) => (
+        <TarjetaEsqueleto key={i} className="flex-row items-center px-4 py-3 gap-3">
+          <View className="flex-1 gap-1.5">
+            <Barra ancho="30%" />
+            <Barra ancho="50%" alto={9} />
+          </View>
+          <View className="w-10 h-6 rounded-full bg-[#dbe3ee]" />
+        </TarjetaEsqueleto>
+      ))}
+    </>
+  );
+}
+
+/** Calendario de un mes: título, días de la semana y cinco semanas. */
+function CalendarioEsqueleto() {
+  return (
+    <TarjetaEsqueleto className="p-4 gap-3">
+      <View className="flex-row justify-between items-center">
+        <Barra ancho="40%" alto={14} />
+        <Barra ancho={40} alto={10} />
+      </View>
+      {[0, 1, 2, 3, 4, 5].map((fila) => (
+        <View key={fila} className="flex-row justify-between">
+          {[0, 1, 2, 3, 4, 5, 6].map((c) => (
+            <View
+              key={c}
+              className={
+                fila === 0 ? 'w-7 h-2.5 rounded bg-[#dbe3ee]' : 'w-7 h-7 rounded-full bg-[#dbe3ee]'
+              }
+            />
+          ))}
+        </View>
+      ))}
+    </TarjetaEsqueleto>
+  );
+}
+
+/** C04: «Elige la fecha del bloqueo» y el calendario. */
+function EsqueletoCalendario() {
+  return (
+    <>
+      <Barra ancho="50%" />
+      <CalendarioEsqueleto />
+    </>
+  );
+}
+
+/** O05 Nueva cita: paciente, teléfono, servicios y el calendario. */
+function EsqueletoFormulario() {
+  return (
+    <>
+      {[0, 1].map((i) => (
+        <View key={i} className="gap-2">
+          <Barra ancho="22%" alto={10} />
+          <View className="h-[52px] rounded-[14px] bg-white border border-[#dbe3ee]" />
+        </View>
+      ))}
+      <View className="gap-2">
+        <Barra ancho="22%" alto={10} />
+        <View className="flex-row flex-wrap gap-2">
+          {[150, 130, 110, 120].map((ancho, i) => (
+            <View key={i} style={{ width: ancho }} className="h-8 rounded-full bg-[#dbe3ee]" />
+          ))}
+        </View>
+      </View>
+      <Barra ancho="18%" alto={10} />
+      <CalendarioEsqueleto />
+    </>
+  );
+}
+
+const contenidoEsqueleto: Record<FormaEsqueleto, () => ReactNode> = {
+  lista: EsqueletoLista,
+  detalle: EsqueletoDetalle,
+  dias: EsqueletoDias,
+  calendario: EsqueletoCalendario,
+  formulario: EsqueletoFormulario,
+};
+
 /**
- * G01: silueta de la pantalla mientras cargan los datos, en lugar de una rueda de carga.
- * Pulsa suavemente; con «reducir movimiento» activado queda quieta. El lector de
- * pantalla anuncia el título («Cargando citas»).
+ * Silueta de la pantalla mientras cargan los datos, en lugar de una rueda de carga. La
+ * forma sigue a la pantalla que va a aparecer; «lista» es G01 del Figma. Pulsa suavemente;
+ * con «reducir movimiento» activado queda quieta. El lector de pantalla anuncia el título.
  */
-export function Esqueleto({ titulo }: { titulo: string }) {
+export function Esqueleto({ titulo, forma = 'lista' }: { titulo: string; forma?: FormaEsqueleto }) {
   const reducirMovimiento = useReducedMotion();
   const [pulso] = useState(() => new Animated.Value(0.65));
   useEffect(() => {
@@ -183,32 +322,12 @@ export function Esqueleto({ titulo }: { titulo: string }) {
     animacion.start();
     return () => animacion.stop();
   }, [pulso, reducirMovimiento]);
-  const barra = (ancho: `${number}%`, alto = 12) => (
-    <View style={{ width: ancho, height: alto }} className="bg-[#dbe3ee] rounded-md" />
-  );
+  const Contenido = contenidoEsqueleto[forma];
   return (
-    <View
-      accessible
-      accessibilityRole="progressbar"
-      accessibilityLabel={titulo}
-      className="flex-1 p-4 bg-navy-50"
-    >
-      {/* Igual que G01 en el Figma: tarjetas con un bloque y tres barras */}
+    // Sin margen propio: va dentro de Pantalla, que ya deja 16 alrededor del contenido
+    <View accessible accessibilityRole="progressbar" accessibilityLabel={titulo} className="flex-1">
       <Animated.View style={{ opacity: pulso, gap: 14 }}>
-        {[0, 1, 2, 3].map((i) => (
-          <View
-            key={i}
-            className="flex-row items-center bg-white rounded-[18px] px-4 py-3.5 gap-3.5"
-            style={{ boxShadow: '0px 4px 16px rgba(11,31,58,0.06)' }}
-          >
-            <View className="w-14 h-16 rounded-xl bg-[#dbe3ee]" />
-            <View className="flex-1 gap-2">
-              {barra('90%', 12)}
-              {barra('65%', 10)}
-              {barra('45%', 10)}
-            </View>
-          </View>
-        ))}
+        <Contenido />
       </Animated.View>
       <Texto className="text-xs text-muted text-center mt-4">{titulo}…</Texto>
     </View>
@@ -249,14 +368,17 @@ export function Estado({
   accion,
   label = 'Reintentar',
   cargando = false,
+  forma,
 }: {
   titulo: string;
   detalle?: string;
   accion?: () => void;
   label?: string;
   cargando?: boolean;
+  /** Forma del skeleton mientras carga (por defecto, la lista de G01). */
+  forma?: FormaEsqueleto;
 }) {
-  if (cargando) return <Esqueleto titulo={titulo} />;
+  if (cargando) return <Esqueleto titulo={titulo} forma={forma} />;
   return (
     <View className="flex-1 items-center justify-center p-6 gap-4 min-h-[220px]">
       <View className="rounded-full p-5 bg-navy-100">

@@ -1,6 +1,6 @@
 import { useState } from 'react';
 import { Pressable, View } from 'react-native';
-import { fechaLocal, instante, sumarDias } from '@/utils/fechas';
+import { fechaLocal, instante, primeraMayuscula, sumarDias } from '@/utils/fechas';
 import { Tarjeta, Texto } from './ui';
 export default function Calendario({
   valor,
@@ -27,12 +27,14 @@ export default function Calendario({
   return (
     <Tarjeta className={error ? 'border border-danger' : undefined}>
       <View className="flex-row justify-between items-center">
-        <Texto className="font-medium capitalize">
-          {primero.toLocaleDateString('es-CO', {
-            timeZone: 'America/Bogota',
-            month: 'long',
-            year: 'numeric',
-          })}
+        <Texto className="font-medium">
+          {primeraMayuscula(
+            primero.toLocaleDateString('es-CO', {
+              timeZone: 'America/Bogota',
+              month: 'long',
+              year: 'numeric',
+            }),
+          )}
         </Texto>
         <View className="flex-row">
           <Pressable accessibilityLabel="Mes anterior" onPress={() => mover(-1)} className="p-3">

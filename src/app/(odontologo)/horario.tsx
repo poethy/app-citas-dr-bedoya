@@ -31,7 +31,7 @@ export default function Horario() {
         {consulta.isError ? (
           <Estado titulo="No pudimos cargar el horario" accion={() => consulta.refetch()} />
         ) : (
-          <Estado titulo="Cargando horario" cargando />
+          <Estado titulo="Cargando horario" cargando forma="dias" />
         )}
       </Pantalla>
     );

@@ -31,7 +31,9 @@ export default function NuevaCita() {
         <Estado titulo="No pudimos cargar los servicios" accion={() => consulta.refetch()} />
       </Pantalla>
     ) : (
-      <Estado titulo="Cargando servicios" cargando />
+      <Pantalla titulo="Nueva cita" menu>
+        <Estado titulo="Cargando servicios" cargando forma="formulario" />
+      </Pantalla>
     );
   if (!servicio)
     return (
