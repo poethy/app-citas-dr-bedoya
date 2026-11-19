@@ -409,7 +409,7 @@ Una función auxiliar `es_odontologo()` (`security definer`) consulta el rol del
 
 La información de contacto del consultorio es de solo lectura desde la app. Las políticas no deben permitir elevar el rol editando el propio perfil, modificar precio o duración acordados desde el cliente ni escribir directamente en citas evitando las RPC. El rol sale de auth.uid().
 
-Para crear una cita o un bloqueo se debe serializar la validación y escritura de ocupación por consultorio y fecha, en una transacción (por ejemplo, con bloqueo transaccional compartido por ambas RPC). La exclusión entre citas no impide por sí sola una carrera entre una cita y un bloqueo; un trigger aislado tampoco garantiza esa exclusión concurrente. Todas las mutaciones afectadas deben usar el mismo mecanismo.
+Para crear una cita o un bloqueo se debe serializar la validación y escritura de ocupación por consultorio y fecha, en una transacción (por ejemplo, con bloqueo transaccional compartido por ambas RPC). La exclusión entre citas no impide por sí sola una carrera entre una cita y un bloqueo; un trigger aislado tampoco garantiza esa exclusión concurrente. Todas las mutaciones afectadas deben usar el mismo mecanismo. **Implementado** en la migración `…_ocupacion_serializada.sql`: `validar_franja` (citas) y el trigger de bloqueos toman `bloquear_ocupacion(fecha)`, un candado de transacción por fecha de Bogotá; `validar_franja` pasa a VOLATILE para ver la fila que el otro acaba de confirmar. `actualizar_horario` bloquea la tabla de citas mientras revisa.
 
 
 ### B4 Operaciones y transiciones
