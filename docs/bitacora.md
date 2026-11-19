@@ -14,6 +14,8 @@ Requisito del curso (sección 7 del documento del proyecto). Una fila por avance
 | 2026-11-18 | Hito 2 · Interfaz y lógica | Pantallas C08–C10: horario por día, edición en pasos de 15 min y aviso de citas fuera del horario | Juan José Ospina | #8 | Las hojas inferiores perdían el margen en la web | | Integración remota |
 | 2026-11-18 | Hito 3 · Datos y ubicación | App conectada a Supabase: Auth real, listado y detalle de citas por HTTP con Axios, RPC para las escrituras y datos de prueba para presentar | Juan José Ospina | #10 | El paciente no ve citas ajenas: sus franjas salen de disponibilidad_dia; `declare` rompía el empaquetado de Metro | | Prueba en Android y con el cliente |
 | 2026-11-18 | Hito 4 · Integración | Concurrencia entre citas y bloqueos (B3): candado por fecha en la base, aplicado en Supabase; bitácora, matriz académica, informe y guía de prueba con el cliente | Juan José Ospina | #11, #12, #13 | Una función STABLE no veía la fila que otra transacción acababa de confirmar | | Prueba en Android y con el cliente |
+| 2026-11-18 | Hito 4 · Integración | Notificaciones push: la app registra el token del teléfono, lo borra al cerrar sesión y abre la cita al tocar el aviso | Juan José Ospina | #14 | Expo Go en Android ya no recibe push remotos: hace falta un APK de EAS | | Configurar EAS y FCM |
+| 2026-11-18 | Hito 4 · Integración | Regla de C10 decidida (no guardar si deja citas fuera) y la hoja lista todas las citas afectadas; migración aplicada en Supabase | Juan José Ospina | #15, #16, #17 | El error de la base solo traía la primera cita | | Prueba en Android y con el cliente |
 
 ## Implementación del frontend en revisión
 
