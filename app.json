@@ -15,6 +15,12 @@
           "locationWhenInUsePermission": "Usamos tu ubicación solo mientras consultas el mapa del consultorio."
         }
       ],
+      [
+        "expo-notifications",
+        {
+          "color": "#0b1f3a"
+        }
+      ],
       "expo-splash-screen"
     ],
     "android": {

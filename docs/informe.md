@@ -83,7 +83,7 @@ Pendiente. La guía y la plantilla para registrarla están en [prueba-con-client
 ## 9. Límites conocidos
 
 - **Datos de prueba:** la agenda, las coordenadas y el teléfono del consultorio son de prueba (`supabase/datos_prueba.sql`) hasta que el consultorio confirme los reales.
-- **Avisos con la app cerrada:** la base y la Edge Function de push están listas, pero la app todavía no registra el token del teléfono, así que los avisos se ven al abrir la app.
+- **Avisos con la app cerrada:** la app ya registra el token del teléfono, pero el push solo llega en un APK propio (EAS) con `projectId` y credenciales de FCM. En Expo Go y en la web los avisos se ven al abrir la app.
 - **Confirmación de correo:** con «Confirm email» activo en Supabase, un paciente nuevo debe confirmar su correo antes de entrar.
 - **Regla de C10:** propuesta por confirmar con el equipo.
 - **Mapa:** necesita Internet para Leaflet y las teselas. No calcula rutas; muestra el consultorio y la ubicación del paciente.
