@@ -68,6 +68,17 @@ Con Supabase:
 - **Pacientes:** se registran desde la app. Para que entren sin confirmar el correo, desactiva «Confirm email» en Supabase → Authentication → Providers → Email.
 - **Datos de prueba para presentar:** corre `supabase/datos_prueba.sql` en el SQL Editor. Crea una agenda de ejemplo en los próximos días hábiles y pone coordenadas de prueba del consultorio. Se puede repetir antes de cada presentación.
 
+### Notificaciones push (avisos con la app cerrada)
+
+La app registra el token del teléfono en `tokens_push` al iniciar sesión y lo borra al cerrarla; la Edge Function `enviar-notificaciones` manda los avisos. Expo Go en Android no recibe push remotos, así que hace falta un APK propio. En Expo Go y en la web los avisos se ven al abrir la app.
+
+Pasos (una sola vez, con la cuenta de Expo del equipo):
+
+1. `npx eas login` y `npx eas init`. Esto crea el proyecto en Expo y escribe `extra.eas.projectId` en `app.json` (hay que hacer commit de ese cambio).
+2. Credenciales de Android para push (FCM): crear un proyecto en Firebase, descargar la clave de cuenta de servicio de FCM v1 y subirla con `npx eas credentials` → Android → Push Notifications.
+3. Variables públicas para el build: `npx eas env:create --environment preview --name EXPO_PUBLIC_SUPABASE_URL --value <url> --visibility plaintext` y lo mismo con `EXPO_PUBLIC_SUPABASE_KEY`. El `.env` no se sube a EAS.
+4. `npx eas build -p android --profile preview` genera el APK para instalar en los teléfonos.
+
 ### Cuentas de prueba (solo demo local, sin `.env`)
 
 | Rol | Correo | Contraseña de demo |

@@ -515,7 +515,7 @@ Las respuestas de citas incluyen precio_acordado_cop y duracion_acordada_min; el
 
 ### B7 Notificaciones y despliegue
 
-El backend recibido de main ya incluye la Edge Function `enviar-notificaciones`, protegida con un secreto de Vault, y el job de envío cada minuto. Su configuración y pruebas constan en [supabase/README.md](../supabase/README.md#notificaciones-push-rf-11-rf-13-rf-16-rf-17). La app todavía debe registrar los tokens del dispositivo en `tokens_push`; no se han conectado ni probado push remotos en esta demo.
+El backend recibido de main ya incluye la Edge Function `enviar-notificaciones`, protegida con un secreto de Vault, y el job de envío cada minuto. Su configuración y pruebas constan en [supabase/README.md](../supabase/README.md#notificaciones-push-rf-11-rf-13-rf-16-rf-17). La app registra el token del dispositivo en `tokens_push` al iniciar sesión (`src/hooks/useNotificacionesPush.ts`, `src/lib/notificaciones.ts`) y lo borra al cerrar sesión (`src/services/remoto/push.remoto.ts`). Con la app abierta muestra el aviso, refresca los datos y, al tocarlo, abre la cita. Necesita un APK propio (`eas.json`, perfil `preview`) con `extra.eas.projectId` y credenciales de FCM; en Expo Go y en la web el token no se pide. Pasos en el README.
 
 
 | Tipo | Cómo llega |

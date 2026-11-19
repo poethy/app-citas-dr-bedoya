@@ -14,6 +14,7 @@ import { GestureHandlerRootView } from 'react-native-gesture-handler';
 import { QueryClient, QueryClientProvider, focusManager } from '@tanstack/react-query';
 import { SafeAreaProvider } from 'react-native-safe-area-context';
 import { useDatos } from '@/hooks/useDatos';
+import { useNotificacionesPush } from '@/hooks/useNotificacionesPush';
 import { useSesionStore } from '@/store/sesion.store';
 import { Estado, AvisoBreve } from '@/components/ui';
 import { simularFallo } from '@/services/mock/repositorio';
@@ -22,6 +23,7 @@ const queryClient = new QueryClient({ defaultOptions: { queries: { retry: 1 } } 
 function Aplicacion() {
   const datos = useDatos();
   const establecer = useSesionStore((s) => s.establecer);
+  useNotificacionesPush();
   useEffect(() => {
     if (datos.data)
       establecer(datos.data.perfiles.find((p) => p.id === datos.data.sesionId) ?? null);

@@ -349,3 +349,42 @@ describe('franjas con la ocupación del servidor', () => {
     expect(franjas[0]?.inicio).toBe(propia.inicio);
   });
 });
+
+describe('token de push (tokens_push)', () => {
+  async function push() {
+    return import('../src/services/remoto/push.remoto');
+  }
+
+  it('guarda el token con upsert para el perfil con sesión', async () => {
+    http.post.mockResolvedValue({ data: null });
+    const { guardarTokenPush } = await push();
+    await guardarTokenPush('ExponentPushToken[abc]', ANA.id);
+    const [ruta, cuerpo, opciones] = http.post.mock.calls[0] ?? [];
+    expect(ruta).toBe('/tokens_push');
+    expect(cuerpo).toMatchObject({ token: 'ExponentPushToken[abc]', perfil_id: ANA.id });
+    expect(opciones.headers.Prefer).toContain('resolution=merge-duplicates');
+  });
+
+  it('al cerrar sesión borra el token antes de salir y solo una vez', async () => {
+    auth.usuario = ANA;
+    http.post.mockResolvedValue({ data: null });
+    http.delete.mockResolvedValue({ data: null });
+    const { guardarTokenPush } = await push();
+    await guardarTokenPush('ExponentPushToken[abc]', ANA.id);
+    const r = await remoto();
+    await r.salir();
+    await r.salir();
+    expect(http.delete).toHaveBeenCalledTimes(1);
+    expect(http.delete).toHaveBeenCalledWith('/tokens_push', {
+      params: { token: 'eq.ExponentPushToken[abc]' },
+    });
+  });
+
+  it('si no se puede borrar el token, igual se cierra la sesión', async () => {
+    http.post.mockResolvedValue({ data: null });
+    http.delete.mockRejectedValue(new Error('sin red'));
+    const { guardarTokenPush, borrarTokenRegistrado } = await push();
+    await guardarTokenPush('ExponentPushToken[abc]', ANA.id);
+    await expect(borrarTokenRegistrado()).resolves.toBeUndefined();
+  });
+});

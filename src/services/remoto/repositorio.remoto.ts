@@ -43,6 +43,7 @@ import { citaFueraDeHorario, errorHorario, HORARIO_INICIAL } from '@/utils/horar
 import { validarNumero } from '@/utils/validaciones';
 import { cerrarSesion, iniciarSesion, registrarPaciente } from './auth.remoto';
 import { listarCitas, obtenerCita } from './citas.remoto';
+import { borrarTokenRegistrado } from './push.remoto';
 import { obtenerPerfil } from './datos.remoto';
 
 /** Código de un error de negocio (ErrorApi o ErrorNegocio), sin depender de la clase. */
@@ -159,6 +160,8 @@ export const repositorioRemoto: Repositorio = {
   },
 
   async salir() {
+    // Primero el token (necesita la sesión para pasar la RLS), luego la sesión
+    await borrarTokenRegistrado();
     await cerrarSesion();
   },
 
