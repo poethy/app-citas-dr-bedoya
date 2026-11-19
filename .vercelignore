@@ -1,0 +1,12 @@
+# No subir secretos ni archivos locales a Vercel: las variables EXPO_PUBLIC_* se configuran en el proyecto de Vercel
+.env
+.env.*
+!.env.template
+node_modules
+dist
+.expo
+.claude
+android
+ios
+supabase/pruebas/node_modules
+*.exe

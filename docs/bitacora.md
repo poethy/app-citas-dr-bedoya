@@ -16,6 +16,11 @@ Requisito del curso (sección 7 del documento del proyecto). Una fila por avance
 | 2026-11-18 | Hito 4 · Integración | Concurrencia entre citas y bloqueos (B3): candado por fecha en la base, aplicado en Supabase; bitácora, matriz académica, informe y guía de prueba con el cliente | Juan José Ospina | #11, #12, #13 | Una función STABLE no veía la fila que otra transacción acababa de confirmar | | Prueba en Android y con el cliente |
 | 2026-11-18 | Hito 4 · Integración | Notificaciones push: la app registra el token del teléfono, lo borra al cerrar sesión y abre la cita al tocar el aviso | Juan José Ospina | #14 | Expo Go en Android ya no recibe push remotos: hace falta un APK de EAS | | Configurar EAS y FCM |
 | 2026-11-18 | Hito 4 · Integración | Regla de C10 decidida (no guardar si deja citas fuera) y la hoja lista todas las citas afectadas; migración aplicada en Supabase | Juan José Ospina | #15, #16, #17 | El error de la base solo traía la primera cita | | Prueba en Android y con el cliente |
+| 2026-11-18 | Hito 4 · Integración | Handoff del equipo y README al día con la integración a Supabase | Juan José Ospina | #18 | | | Ajustes de uso |
+| 2026-11-18 | Hito 2 · Interfaz y lógica | Ver contraseña, avisos separados en «Por ver» y «Vistos», skeleton de carga y animaciones; Nueva cita funcionando con Supabase | Juan José Ospina | #19 | Nueva cita quedaba cargando: usaba el id de un servicio de la demo | | Llevarlo al Figma |
+| 2026-11-19 | Hito 2 · Interfaz y lógica | Ojo de contraseña y avisos en el Figma; skeleton igual a G01; pruebas y demo sin depender del día de la semana | Juan José Ospina | #20 | La agenda de ejemplo caía en sábado y una prueba fallaba según el día | | Splash |
+| 2026-11-19 | Hito 2 · Interfaz y lógica | Al abrir la app se ve A00 Splash (también el splash nativo) en lugar del skeleton de lista | Juan José Ospina | #21, #22 | El skeleton de lista no se parecía a la pantalla a la que se entraba | | APK con EAS |
+| 2026-11-19 | Hito 4 · Integración | Versión web publicada en Vercel como plan B (https://app-citas-dr-bedoya.vercel.app), ajustada para celular | Juan José Ospina | #23 | En Vercel el transformador de SVG no encontraba el de Expo y la compilación fallaba | | Prueba con cuentas reales en el celular |
 
 ## Implementación del frontend en revisión
 

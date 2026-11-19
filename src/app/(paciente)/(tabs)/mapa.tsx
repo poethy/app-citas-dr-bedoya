@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { Linking, View } from 'react-native';
+import { Linking, Platform, View } from 'react-native';
 import { router } from 'expo-router';
 import { useSeguimientoUbicacion } from '@/hooks/useSeguimientoUbicacion';
 import { useConexion } from '@/hooks/useConexion';
@@ -29,10 +29,28 @@ export default function Mapa() {
             </Texto>
             {gps.permiso === 'denied' ? (
               <>
-                <ErrorAviso error={new Error('El permiso de ubicación está denegado.')} />
-                <Boton variant="secondary" onPress={() => Linking.openSettings()}>
-                  Abrir ajustes
-                </Boton>
+                {Platform.OS === 'web' ? (
+                  <>
+                    {/* En el navegador no hay ajustes que abrir: el permiso se da en la barra de direcciones */}
+                    <ErrorAviso
+                      error={
+                        new Error(
+                          'El navegador bloqueó tu ubicación. Permítela desde el candado de la barra de direcciones y vuelve a intentarlo.',
+                        )
+                      }
+                    />
+                    <Boton cargando={gps.cargando} onPress={() => gps.activar()}>
+                      Volver a intentar
+                    </Boton>
+                  </>
+                ) : (
+                  <>
+                    <ErrorAviso error={new Error('El permiso de ubicación está denegado.')} />
+                    <Boton variant="secondary" onPress={() => Linking.openSettings()}>
+                      Abrir ajustes
+                    </Boton>
+                  </>
+                )}
               </>
             ) : (
               <Boton cargando={gps.cargando} onPress={() => gps.activar()}>
