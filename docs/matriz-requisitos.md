@@ -16,6 +16,32 @@
 | RF-28 | C02, C03 y S03 | src/hooks/useFranjasDisponibles.ts; src/utils/franjas.ts; src/utils/validaciones.ts | Cálculo por tramos y fecha; pruebas de huecos separados, almuerzo y duración inválida. |
 | RF-29 | C04, S03 y S06 | src/utils/franjas.ts; src/services/mock/reglas.ts | Solo paciente sujeto al límite; nueva comprobación al confirmar. |
 | RF-30 | S01, S06, C01 y C02 | src/app/(odontologo)/servicios/[id].tsx; src/services/mock/reglas.ts | Precio y duración guardados en la cita; prueba de edición y reprogramación sin alterar valores históricos. |
+| C08 a C10 (horario de atención) | C08, C09, C10, O03, P05 | src/app/(odontologo)/horario.tsx; src/utils/horario.ts; RPC `actualizar_horario` | Días, apertura, cierre y almuerzo editables; la base rechaza el cambio si deja citas activas fuera (tests/horario.test.ts y supabase/pruebas). |
+
+## Requisitos académicos del proyecto (Proyecto_Final_Movil_II.docx)
+
+| Requisito | Función o pantalla | Archivo | Evidencia |
+| --- | --- | --- | --- |
+| Expo SDK 58, TypeScript estricto y Expo Router, código separado por capas | Toda la app | package.json; tsconfig.json; src/app, src/components, src/hooks, src/services, src/models, src/mappers, src/types | `npx tsc --noEmit` sin errores y sin `any` |
+| Stack, Tabs y Drawer conectados | Flujos de agendar y detalle (Stack), secciones por rol (Tabs), accesos complementarios (Drawer) | src/app/(paciente)/(tabs)/_layout.tsx; src/app/(odontologo)/_layout.tsx; src/components/MenuRol.tsx | Recorrido de los dos roles |
+| Ruta dinámica por id con manejo de id inexistente | M03, O08, O05, M04 | src/app/cita/[id]/index.tsx; src/app/solicitud/[id].tsx; src/screens/DetalleCitaScreen.tsx | Abrir una cita de la lista; un id que no existe muestra M04 |
+| NativeWind, fuente propia, áreas seguras | Toda la app | tailwind.config.js; src/global.css; src/app/_layout.tsx (Poppins) | Capturas y prueba en Android |
+| Tres o más componentes reutilizables con props tipadas | Botón, tarjeta, estados, hoja inferior, selector de hora, contador | src/components/ui.tsx; src/components/Contador.tsx; src/components/SelectorHora.tsx; src/components/CitaCard.tsx | Usados en varias pantallas |
+| Listas, tarjetas, búsqueda o filtro | S01 (buscar y filtrar servicios), M01 (pestañas por estado), O04 | src/screens/AgendarScreen.tsx; src/app/(paciente)/(tabs)/mis-citas.tsx | Filtrar servicios y citas |
+| useState y useEffect con finalidad verificable; hook propio | Seguimiento GPS, franjas, ocupación, hora actual | src/hooks/useSeguimientoUbicacion.ts; src/hooks/useFranjasDisponibles.ts; src/hooks/useOcupacion.ts; src/hooks/useAhora.ts | Comentarios de entradas, estado y resultado en cada hook |
+| Zustand para estado compartido, distinto del estado remoto | Sesión, borrador de agendamiento, agenda, avisos breves | src/store/*.store.ts | La sesión y el borrador pasan entre pantallas |
+| Contador contextual con límites | C02 duración del servicio (15 a 180 min en pasos de 15), C04 anticipaciones (1 a 72 h), C09 horas | src/components/Contador.tsx; src/app/(odontologo)/servicios/[id].tsx; src/app/(odontologo)/anticipacion.tsx | La duración cambia las franjas que ve el paciente |
+| Cálculo contextual con validaciones | Capacidad de franjas (RF-28): horario − citas − bloqueos ÷ duración | src/utils/franjas.ts; src/utils/validaciones.ts | tests/reglas.test.ts (vacíos, no numéricos, negativos y cero) |
+| Formulario con validaciones y mensajes | Registro (A04), nueva cita (O09), editar servicio (C02), perfil (P04) | src/utils/validaciones.ts; src/screens/AccesoScreen.tsx | Mensajes específicos por campo |
+| HTTP con Axios: listado y detalle por id | Citas del paciente y del odontólogo | src/services/http/cliente.ts; src/services/remoto/citas.remoto.ts | tests/integracion.test.ts revisa `GET /citas` y `GET /citas?id=eq.{id}` |
+| baseURL centralizada, interfaces de respuesta, modelos y mapper | Toda la capa de datos | src/services/http/cliente.ts; src/types/api.ts; src/models/index.ts; src/mappers/remoto.mapper.ts | tests/remoto.test.ts y tests/integracion.test.ts |
+| TanStack Query con hooks, queryKey y caché; carga, error, vacío y reintentar | Consultas de datos, citas, cita y ocupación | src/hooks/useDatos.ts; src/hooks/useCitas.ts; src/hooks/useCita.ts; src/hooks/useOcupacion.ts; componente Estado | Estados G01 a G04 en las pantallas |
+| Datos remotos en el flujo principal y conservación entre teléfonos | Agendar, aprobar, cancelar, reprogramar, bloquear y horario | src/services/remoto/repositorio.remoto.ts; supabase/migrations | Agendar como paciente en un teléfono y aprobar como odontólogo en otro |
+| Mapa con OpenStreetMap y Leaflet en WebView, expo-location | MP01 a MP07 | src/components/MapaVista.tsx; src/constants/mapa-html.ts; src/app/(paciente)/(tabs)/mapa.tsx | Marcador del consultorio con las coordenadas de `configuracion` |
+| Permiso, ubicación actual, activar, pausar y reanudar, errores y limpieza de suscripciones | MP01 a MP07 | src/hooks/useSeguimientoUbicacion.ts | `watchPositionAsync` se libera al salir o pasar a segundo plano |
+| Sin conexión y sin confirmaciones falsas | G02 | src/hooks/useConexion.ts; src/services/http/errores.ts (`SIN_CONEXION`) | Las acciones fallidas muestran el error y no anuncian éxito |
+| .env.template sin credenciales privadas | Configuración | .env.template; README.md | Solo variables `EXPO_PUBLIC_` |
+| Bitácora, prueba con el cliente e informe | Entrega | docs/bitacora.md; docs/prueba-con-cliente.md; docs/informe.md | Pendiente: prueba con el cliente y capturas en Android |
 
 ## Pruebas reproducibles
 
