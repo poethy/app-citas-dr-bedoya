@@ -1,6 +1,6 @@
 # Handoff de App Citas Dr Camilo Bedoya
 
-Actualizado el 17 de noviembre de 2026. Frontend de demo implementado. Se conservaron los cambios del backend recibidos de main, cuya integración con el frontend sigue pendiente. Prueba de GPS en Android real pendiente.
+Actualizado el 18 de noviembre de 2026. La app está conectada a Supabase (Auth real, datos por HTTP con Axios y escrituras por RPC) y conserva la demo local sin `.env`. Todas las migraciones están aplicadas. Pendiente: APK con EAS para push, prueba en Android real, prueba con el cliente y datos reales del consultorio.
 
 ## Cliente y alcance
 
@@ -8,9 +8,13 @@ Dr. Camilo Bedoya Orozco, odontólogo independiente en Pereira. Recibe solicitud
 
 ## Fuente visual vigente
 
-Se implementó exclusivamente desde la página [Flujo de navegación](https://www.figma.com/design/nyTAxFuw0CJ5hxoIqvsAIk?node-id=2012-2), especialmente el marco Flujo de usuario por rol. Se revisaron las pantallas incluidas en ese flujo. Figma permanece sin modificar; los ajustes siguientes se incorporaron al código.
+El frontend se implementó desde la página [Flujo de navegación](https://www.figma.com/design/nyTAxFuw0CJ5hxoIqvsAIk?node-id=2012-2), marco «Flujo de usuario por rol». Después se modificó el Figma así:
 
-Las 58 pantallas representan rutas y variantes de estado, no 58 archivos independientes. Stack raíz con auth y ambos roles; cada rol tiene Drawer y Tabs. Paciente: Inicio, Agendar con Stack interno, Mis citas y Mapa. Doctor: Agenda, Solicitudes, Nueva cita y Avisos. Detalle compartido cita/[id]/index, reprogramación, solicitud/[id] y consultorio. Cierre de sesión y confirmación de cancelación son modales. S07/S08 reinician el flujo para no volver al resumen al pulsar Atrás.
+- **C08 Horario de atención, C09 Editar horas del día y C10 Citas fuera del nuevo horario:** en 🎨 Alta fidelidad (sección «7 · Pantallas de apoyo del odontólogo») y como carril «7 · Horario de atención» del flujo; «Cerrar sesión» pasó a ser el carril 8. C10 muestra la lista de citas afectadas.
+- **Drawer O03:** ítem nuevo «Horario de atención».
+- **C05 en alta fidelidad:** pasó al diseño de línea de tiempo del flujo («Bloquear disponibilidad»). C06 y C07 se dejaron con el diseño anterior por decisión del equipo.
+
+Las 61 pantallas representan rutas y variantes de estado, no 61 archivos independientes. Stack raíz con auth y ambos roles; cada rol tiene Drawer y Tabs. Paciente: Inicio, Agendar con Stack interno, Mis citas y Mapa. Doctor: Agenda, Solicitudes, Nueva cita y Avisos; desde el Drawer, Servicios, Anticipación, Bloqueos y Horario de atención. Detalle compartido cita/[id]/index, reprogramación, solicitud/[id] y consultorio. Cierre de sesión y confirmación de cancelación son modales. S07/S08 reinician el flujo para no volver al resumen al pulsar Atrás.
 
 ## Decisiones cerradas
 
@@ -23,20 +27,35 @@ Las 58 pantallas representan rutas y variantes de estado, no 58 archivos indepen
 - Cada cita conserva el precio en COP y la duración acordados al crearla. Editar el catálogo afecta citas nuevas, sin recalcular las existentes. Reprogramar conserva esos valores; el nuevo fin se calcula con la duración guardada.
 - La disponibilidad se calcula por tramos libres de una fecha concreta, sin sumar huecos separados para encajar una cita. Los mensajes muestran la anticipación configurada, no un texto fijo de 24 horas.
 - La información del consultorio continúa siendo de solo lectura. El catálogo permite configurar nombre, precio, duración y tipo de confirmación.
+- El odontólogo configura su horario de atención y el almuerzo (C08). Si un cambio deja citas pendientes o confirmadas futuras fuera del horario o cruzando el almuerzo, no se guarda: C10 lista todas esas citas para cancelarlas o reprogramarlas (igual que C06 con los bloqueos).
+- Una cita y un bloqueo creados al mismo tiempo no se pueden cruzar: la base serializa la ocupación por fecha.
 
-## Etapa actual y responsable del backend
+## Estado actual
 
-Se construyó el frontend con mocks persistentes en el teléfono. Conserva cambios al cerrar y volver a abrir; cambiar de sesión permite demostrar la interacción paciente/doctor en el mismo dispositivo. No hay sincronización entre dispositivos ni Auth real en esta demo. El backend de otra persona del equipo ya está incorporado desde main y se conserva sin cambiar sus migraciones ni desplegar nada.
+### Dos modos con la misma interfaz
 
-### Backend recibido de main
+`src/services/repositorio.ts` elige el servicio de datos:
 
-Según [supabase/README.md](../supabase/README.md), el backend está desplegado: tablas, RLS, prevención de solapamientos, RPC, avisos por triggers, recordatorios con pg_cron y Edge Function de envío push. Incluye una cuenta del odontólogo y tipos en `src/types/database.ts`. El contrato por pantalla está en [pantallas-y-datos.md](pantallas-y-datos.md). Estas piezas no se conectan todavía a los servicios mock.
+- **Con `.env`** (`EXPO_PUBLIC_SUPABASE_URL` y `EXPO_PUBLIC_SUPABASE_KEY`): `src/services/remoto`. Auth con supabase-js; lecturas con Axios contra `/rest/v1` (listado y detalle de citas por id, servicios, configuración, horario, bloqueos y avisos); escrituras de citas por RPC. Paciente y odontólogo comparten los datos desde teléfonos distintos.
+- **Sin `.env`**: `src/services/mock`, la demo local con AsyncStorage, cuentas de prueba y escenarios de demostración.
 
-La integración debe contrastar las reglas nuevas de vencimiento, precio/duración históricos y exenciones del doctor con las RPC vigentes. Los cambios necesarios se harán en migraciones nuevas y se revisarán por separado. El envío push requiere registrar tokens y probar un development build en Android. La configuración de correo y los datos reales del consultorio siguen descritos en el README del backend.
+El paciente no ve citas ajenas (RLS), así que sus franjas se calculan con la ocupación que devuelve la RPC `disponibilidad_dia`.
 
-Se conservan [CONTRIBUTING.md](../CONTRIBUTING.md), [AGENTS.md](../AGENTS.md) y el historial previo de la bitácora. El PR no modifica ni aplica migraciones de Supabase.
+### Backend
 
-El vencimiento se reconoce al hidratar, volver al primer plano, consultar o aprobar; con la app abierta se actualiza al llegar la hora. No se promete ejecución de jobs con la demo cerrada. El estado efectivo es vencida desde la hora de inicio.
+Todo está aplicado en el proyecto de Supabase y documentado en [supabase/README.md](../supabase/README.md). Además de lo recibido de main (tablas, RLS, RPC, avisos, recordatorios y Edge Function de push), se agregaron migraciones nuevas para:
+
+- Estado `vencida`, precio y duración acordados en cada cita, y vencimiento automático con pg_cron.
+- `actualizar_horario` para C08–C10, con la lista de citas afectadas.
+- Serialización de la ocupación por fecha entre citas y bloqueos (B3).
+
+Las pruebas de la base (`supabase/pruebas`) ya no dependen del día ni la hora. `supabase/datos_prueba.sql` carga una agenda de ejemplo para presentar y se puede repetir.
+
+### Notificaciones push
+
+La app registra el token del teléfono en `tokens_push` al iniciar sesión, lo borra al cerrarla y abre la cita al tocar el aviso. El push solo llega en un APK de EAS (`eas.json`, perfil `preview`) con `projectId` y credenciales de FCM; los pasos están en el README.
+
+Se conservan [CONTRIBUTING.md](../CONTRIBUTING.md), [AGENTS.md](../AGENTS.md) y el historial de la bitácora. `main` está protegida: los cambios entran por PR.
 
 ## Ajustes incorporados al código
 
@@ -50,33 +69,44 @@ El vencimiento se reconoce al hidratar, volver al primer plano, consultar o apro
 | S06 a S08 | Resumen dinámico por servicio; «Enviar solicitud» cuando requiere aprobación. |
 | O06 | Mostrar resultado y aviso diferentes para aprobar y rechazar. |
 | M07 y M08 | Si reprograma el paciente, reaplicar confirmación del servicio y conservar precio/duración. Si falla, no perder horario original. |
+| C08 a C10 | Horario por día con interruptor, edición en pasos de 15 minutos, almuerzo y lista de citas que impiden guardar. P05 muestra el horario guardado. |
+| MP01 | El marcador del consultorio toma las coordenadas de `configuracion`; sin ellas usa un punto de referencia. |
 
 ## Estilo y tecnologías
 
-Referencia de código: `C:/Users/StivenM/Documents/react-native-parcial`, especialmente navegacion-app y movies. Componentes legibles, props tipadas, hooks y servicios separados. React Native, TypeScript, Expo SDK 58 como objetivo, Expo Router, NativeWind de clase, Zustand, TanStack Query, Axios para la integración futura y Leaflet/OpenStreetMap en WebView con expo-location. Validar versiones antes de instalar; mantener npm y package-lock. Paleta navy y Poppins del flujo; monograma con Libre Baskerville.
+Referencia de código: `C:/Users/StivenM/Documents/react-native-parcial`, especialmente navegacion-app y movies. Componentes legibles, props tipadas, hooks y servicios separados. React Native, TypeScript, Expo SDK 58, Expo Router, NativeWind de clase, Zustand, TanStack Query, Axios, Leaflet/OpenStreetMap en WebView con expo-location y expo-notifications. Validar versiones antes de instalar; mantener npm y package-lock. Paleta navy y Poppins del flujo; monograma con Libre Baskerville.
 
 ## Documentos vigentes
 
 - [Cliente y problema](CLIENTE%20Y%20PROBLEMA%20%28actualizado%20v2%29.docx): negocio y alcance, sin detalles de la demo o frontend.
 - [Requerimientos](requerimientos_funcionales_app_citasFinal%20%28actualizado%29.pdf): RF-01 a RF-30 consolidados con las decisiones; fuente editable en requerimientos.md.
 - [Especificaciones técnicas](especificaciones-tecnicas.md): Parte I frontend y Parte II backend.
+- [Matriz de requisitos](matriz-requisitos.md): RF y requisitos académicos con archivo y evidencia.
+- [Informe](informe.md): borrador del informe final.
+- [Prueba con el cliente](prueba-con-cliente.md): tareas y plantilla de registro.
+- [Bitácora](bitacora.md): avances por fecha y PR.
 - Proyecto_Final_Movil_II.docx se conserva intacto como documento recibido. Esta revisión no modifica sus exigencias.
 
 ## Implementación y próximos pasos
 
-- [x] Base Expo SDK 58, rutas, componentes del flujo y guardias de sesión demo.
-- [x] Servicios mock, persistencia e invalidación de consultas al mutar o cambiar de usuario.
+- [x] Base Expo SDK 58, rutas, componentes del flujo y guardias de sesión.
 - [x] Cálculo, formularios, vencimiento, precios/duraciones históricos y excepciones por rol.
-- [x] Mapa, permisos y limpieza de suscripciones implementados; comprobar funcionamiento en Android real.
-- [x] Escenarios de error y persistencia; recorrido paciente/doctor probado en navegador. Prueba con el cliente pendiente.
-- [x] Matriz y bitácora creadas. Ver README para ejecución, cuentas y límites.
-- Integrar backend cuando exista el contrato remoto operativo y verificar HTTP real e intercambio entre dispositivos.
+- [x] Integración con Supabase: Auth real, HTTP con Axios, RPC y datos compartidos entre teléfonos.
+- [x] Horario de atención (C08–C10) en Figma, base y app.
+- [x] Concurrencia entre citas y bloqueos en la base.
+- [x] Registro del token de push; falta el APK con EAS.
+- [x] Matriz académica, informe en borrador, guía de prueba con el cliente y bitácora hasta el PR #17.
+- [ ] APK con EAS y prueba de push en un teléfono.
+- [ ] Prueba de punta a punta con cuentas reales y en Android (mapa, permisos y GPS incluidos); capturas.
+- [ ] Prueba con el cliente y al menos un ajuste derivado.
+- [ ] Observaciones del docente en la bitácora.
+- [ ] Completar el informe.
 
-## Pendientes de datos y mecanismos
+## Pendientes de datos y configuración
 
-Horarios L–V 8:00–18:00, sábado 8:00–12:00, almuerzo 12:30–13:30 y precios son ejemplos por confirmar. Coordenadas y teléfono del consultorio pendientes. No se dispone de Datos_ejemplo_wireframes.md: no restaurarlo ni depender de él sin revisar su eliminación. Los ejemplos del jueves 19 de noviembre de 2026 son referencias del prototipo, no un reloj fijo para la app.
-
-Recordatorios, resumen diario, vinculación de cuentas y confirmación de reprogramaciones realizadas por el doctor tienen pendientes concretos en B9. Las decisiones cerradas de anticipación, vencimiento y conservación de valores ya no están por confirmar.
+- **Datos del consultorio:** horario, almuerzo, precios, coordenadas y teléfono son de prueba hasta que el consultorio confirme los reales. Al tenerlos se actualizan `configuracion`, `horario_atencion` y `servicios` en Supabase; la app los toma sola.
+- **Supabase:** desactivar «Confirm email» (Authentication → Sign In / Providers → Email) para que los pacientes entren sin confirmar el correo, y activar la protección de contraseñas filtradas (Authentication → Attack Protection; suele ser del plan Pro).
+- Siguen abiertos en B9 de la especificación: recordatorios y resumen diario, vinculación segura de pacientes que llamaron, confirmación de reprogramaciones del doctor y verificación de correo.
 
 ## Antecedentes del diseño
 
