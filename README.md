@@ -81,6 +81,7 @@ La app está publicada en **https://app-citas-dr-bedoya.vercel.app**, conectada 
 - Variables: `EXPO_PUBLIC_SUPABASE_URL` y `EXPO_PUBLIC_SUPABASE_KEY` en el proyecto de Vercel `app-citas-dr-bedoya`. El `.env` no se sube (`.vercelignore`).
 - Publicar de nuevo después de fusionar en `main`: `npx vercel deploy --prod` (pide `npx vercel login` la primera vez).
 - En la web no hay push y el mapa pide permiso de ubicación al navegador.
+- En iPhone: abrir el enlace en Safari → Compartir → «Agregar a pantalla de inicio». Queda con el ícono «CB» y el nombre «Citas Dr. Bedoya», y se abre sin la barra del navegador (íconos y `manifest.webmanifest` en `public/`).
 
 ### Notificaciones push (avisos con la app cerrada)
 
