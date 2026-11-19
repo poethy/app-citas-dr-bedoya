@@ -7,6 +7,7 @@ import {
   mapConfiguracion,
   mapHorario,
   mapOcupados,
+  isoUtc,
   mapServicio,
   parametrosHorario,
   type PerfilRemoto,
@@ -37,9 +38,13 @@ import type {
   NotificacionRespuesta,
   ServicioRespuesta,
 } from '@/types/api';
-import { ErrorNegocio } from '@/utils/errores';
-import { fechaTexto, horaTexto } from '@/utils/fechas';
-import { citaFueraDeHorario, errorHorario, HORARIO_INICIAL } from '@/utils/horario';
+import { ErrorCitasFueraDeHorario, ErrorNegocio, type CitaAfectada } from '@/utils/errores';
+import {
+  citasFueraDeHorario,
+  errorHorario,
+  HORARIO_INICIAL,
+  mensajeCitasFuera,
+} from '@/utils/horario';
 import { validarNumero } from '@/utils/validaciones';
 import { cerrarSesion, iniciarSesion, registrarPaciente } from './auth.remoto';
 import { listarCitas, obtenerCita } from './citas.remoto';
@@ -49,6 +54,26 @@ import { obtenerPerfil } from './datos.remoto';
 /** Código de un error de negocio (ErrorApi o ErrorNegocio), sin depender de la clase. */
 const codigoDe = (e: unknown): string | undefined =>
   e instanceof Error && 'codigo' in e && typeof e.codigo === 'string' ? e.codigo : undefined;
+
+/** Detalle de un ErrorApi, sin depender de la clase. */
+const detalleDe = (e: unknown): string | undefined =>
+  e instanceof Error && 'detalle' in e && typeof e.detalle === 'string' ? e.detalle : undefined;
+
+/** Lista de citas del detalle de CITAS_FUERA_DE_HORARIO: [{ id, paciente, inicio }]. */
+export function leerAfectadas(detalle: string | undefined): CitaAfectada[] {
+  if (!detalle) return [];
+  try {
+    const lista: unknown = JSON.parse(detalle);
+    if (!Array.isArray(lista)) return [];
+    return lista.flatMap((x: { id?: unknown; paciente?: unknown; inicio?: unknown }) =>
+      typeof x.id === 'string' && typeof x.paciente === 'string' && typeof x.inicio === 'string'
+        ? [{ id: x.id, pacienteNombre: x.paciente, inicio: isoUtc(x.inicio) }]
+        : [],
+    );
+  } catch {
+    return [];
+  }
+}
 
 const ES_UUID = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
 
@@ -249,14 +274,18 @@ export const repositorioRemoto: Repositorio = {
       await rpc('actualizar_horario', parametrosHorario(horario));
     } catch (e) {
       if (codigoDe(e) !== 'CITAS_FUERA_DE_HORARIO') throw e;
-      // La base no guardó nada. Se busca la cita para que C10 pueda abrirla («Ver la cita»).
-      const afectada = citaFueraDeHorario(await listarCitas(), horario, new Date());
-      if (!afectada) throw e;
-      throw new ErrorNegocio(
-        'CITAS_FUERA_DE_HORARIO',
-        `El ${fechaTexto(afectada.inicio).replace(',', '')} hay una cita de ${afectada.pacienteNombre} a las ${horaTexto(afectada.inicio)} que quedaría fuera del nuevo horario. Cancélala o reprográmala antes de guardar.`,
-        afectada.id,
-      );
+      // La base no guardó nada. Su detalle trae la lista (migración …_actualizar_horario_lista);
+      // con la versión anterior se calcula aquí con las citas.
+      const desdeBase = leerAfectadas(detalleDe(e));
+      const afectadas: CitaAfectada[] = desdeBase.length
+        ? desdeBase
+        : citasFueraDeHorario(await listarCitas(), horario, new Date()).map((c) => ({
+            id: c.id,
+            pacienteNombre: c.pacienteNombre,
+            inicio: c.inicio,
+          }));
+      if (!afectadas.length) throw e;
+      throw new ErrorCitasFueraDeHorario(afectadas, mensajeCitasFuera(afectadas));
     }
     return horario;
   },

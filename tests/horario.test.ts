@@ -222,3 +222,41 @@ describe('servicio simulado: guardarHorario', () => {
     expect((await (await repo()).consultar()).horario).toEqual(HORARIO_INICIAL);
   });
 });
+
+describe('C10 con todas las citas afectadas', () => {
+  it('devuelve todas, en orden', async () => {
+    const { citasFueraDeHorario } = await import('../src/utils/horario');
+    const jueves = proximo(4);
+    const h = copia(HORARIO_INICIAL);
+    h.dias = h.dias.filter((d) => d.diaSemana !== 4);
+    const tarde = cita(jueves, 900, 45);
+    const temprano = cita(jueves, 480, 45);
+    const cancelada = cita(jueves, 600, 45, 'cancelada');
+    expect(
+      citasFueraDeHorario([tarde, cancelada, temprano], h, new Date()).map((c) => c.id),
+    ).toEqual([temprano.id, tarde.id]);
+  });
+  it('el mensaje cambia según cuántas sean', async () => {
+    const { mensajeCitasFuera } = await import('../src/utils/horario');
+    const una = { pacienteNombre: 'Ana Gómez', inicio: instante(proximo(4), 660).toISOString() };
+    expect(mensajeCitasFuera([una])).toMatch(/^El .* hay una cita de Ana Gómez a las .* Cancélala/);
+    expect(mensajeCitasFuera([una, una, una])).toBe(
+      'Hay 3 citas que quedarían fuera del nuevo horario. Cancélalas o reprográmalas antes de guardar.',
+    );
+  });
+  it('la demo devuelve la lista en el error', async () => {
+    vi.resetModules();
+    disco.datos.clear();
+    const r = (await import('../src/services/mock/repositorio')).repositorio;
+    await r.login('doctor@demo.com', 'Demo2026');
+    const db = await r.consultar();
+    const h = copia(db.horario);
+    h.dias = [];
+    const error = await r.guardarHorario(h).catch((e: unknown) => e);
+    expect(error).toMatchObject({ codigo: 'CITAS_FUERA_DE_HORARIO' });
+    const activas = db.citas.filter(
+      (c) => ['pendiente', 'confirmada'].includes(c.estado) && Date.parse(c.inicio) > Date.now(),
+    );
+    expect((error as { afectadas: unknown[] }).afectadas).toHaveLength(activas.length);
+  });
+});

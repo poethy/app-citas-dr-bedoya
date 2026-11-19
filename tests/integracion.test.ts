@@ -388,3 +388,30 @@ describe('token de push (tokens_push)', () => {
     await expect(borrarTokenRegistrado()).resolves.toBeUndefined();
   });
 });
+
+describe('C10: lista de citas que manda la base', () => {
+  it('lee el JSON del detalle', async () => {
+    const { leerAfectadas } = await import('../src/services/remoto/repositorio.remoto');
+    expect(
+      leerAfectadas('[{"id":"c1","paciente":"Ana Gómez","inicio":"2026-11-26T16:00:00+00:00"}]'),
+    ).toEqual([{ id: 'c1', pacienteNombre: 'Ana Gómez', inicio: '2026-11-26T16:00:00.000Z' }]);
+    expect(leerAfectadas('Ana Gómez · Jue 26 nov, 11:00 a. m.')).toEqual([]);
+    expect(leerAfectadas(undefined)).toEqual([]);
+  });
+
+  it('usa la lista de la base sin volver a pedir las citas', async () => {
+    auth.usuario = DOCTOR;
+    const { ErrorApi: ErrorApiNuevo } = await import('../src/services/http/errores');
+    http.post.mockRejectedValue(
+      new ErrorApiNuevo('CITAS_FUERA_DE_HORARIO', {
+        detalle:
+          '[{"id":"a","paciente":"Ana","inicio":"2026-11-26T13:00:00+00:00"},{"id":"b","paciente":"Carlos","inicio":"2026-11-26T14:00:00+00:00"}]',
+      }),
+    );
+    const error = await (await remoto()).guardarHorario(HORARIO_INICIAL).catch((e: unknown) => e);
+    expect(error).toMatchObject({ codigo: 'CITAS_FUERA_DE_HORARIO', referencia: 'a' });
+    expect((error as { afectadas: unknown[] }).afectadas).toHaveLength(2);
+    expect((error as Error).message).toContain('Hay 2 citas');
+    expect(http.get).not.toHaveBeenCalled();
+  });
+});

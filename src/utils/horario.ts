@@ -1,6 +1,6 @@
 // Horario de atención (C08–C10, P05). Funciones puras con pruebas en tests/horario.test.ts.
 import type { Cita, DiaAtencion, Franja, HorarioAtencion } from '@/models';
-import { instante } from './fechas';
+import { fechaTexto, horaTexto, instante } from './fechas';
 
 /** El mismo horario del seed de la base: L–V 8:00–18:00, sábado 8:00–12:00, almuerzo L–V. */
 export const HORARIO_INICIAL: HorarioAtencion = {
@@ -147,15 +147,11 @@ function fechaLocalDe(valor: string): string {
 }
 
 /**
- * C10: la primera cita pendiente o confirmada que todavía no empieza y que quedaría
- * fuera del horario nuevo o cruzaría el almuerzo. Es la misma regla que aplica la RPC
- * actualizar_horario en la base; aquí la usa el servicio simulado.
+ * C10: las citas pendientes o confirmadas que todavía no empiezan y que quedarían
+ * fuera del horario nuevo o cruzarían el almuerzo, de la más cercana a la más lejana.
+ * Es la misma regla que aplica la RPC actualizar_horario en la base.
  */
-export function citaFueraDeHorario(
-  citas: Cita[],
-  horario: HorarioAtencion,
-  ahora: Date,
-): Cita | null {
+export function citasFueraDeHorario(citas: Cita[], horario: HorarioAtencion, ahora: Date): Cita[] {
   const activas = citas
     .filter(
       (c) =>
@@ -163,14 +159,30 @@ export function citaFueraDeHorario(
         Date.parse(c.inicio) > ahora.getTime(),
     )
     .sort((a, b) => Date.parse(a.inicio) - Date.parse(b.inicio));
-  for (const cita of activas) {
+  return activas.filter((cita) => {
     const fecha = fechaLocalDe(cita.inicio);
     const dia = buscarDia(horario, diaDeSemana(fecha));
     const inicio = minutosLocales(cita.inicio);
     const fin = inicio + Math.round((Date.parse(cita.fin) - Date.parse(cita.inicio)) / 60_000);
-    if (!dia || inicio < dia.apertura || fin > dia.cierre) return cita;
+    if (!dia || inicio < dia.apertura || fin > dia.cierre) return true;
     const a = horario.almuerzo;
-    if (a && a.dias.includes(dia.diaSemana) && inicio < a.fin && fin > a.inicio) return cita;
-  }
-  return null;
+    return !!a && a.dias.includes(dia.diaSemana) && inicio < a.fin && fin > a.inicio;
+  });
+}
+
+/** C10: «El jueves 19 de noviembre hay una cita de Ana…» o «Hay 3 citas que quedarían…». */
+export function mensajeCitasFuera(afectadas: { pacienteNombre: string; inicio: string }[]): string {
+  const [una] = afectadas;
+  if (afectadas.length === 1 && una)
+    return `El ${fechaTexto(una.inicio).replace(',', '')} hay una cita de ${una.pacienteNombre} a las ${horaTexto(una.inicio)} que quedaría fuera del nuevo horario. Cancélala o reprográmala antes de guardar.`;
+  return `Hay ${afectadas.length} citas que quedarían fuera del nuevo horario. Cancélalas o reprográmalas antes de guardar.`;
+}
+
+/** La primera cita afectada, o null. */
+export function citaFueraDeHorario(
+  citas: Cita[],
+  horario: HorarioAtencion,
+  ahora: Date,
+): Cita | null {
+  return citasFueraDeHorario(citas, horario, ahora)[0] ?? null;
 }

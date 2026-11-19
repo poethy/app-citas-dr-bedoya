@@ -19,10 +19,15 @@ import {
   validarInicio,
   vencerSolicitudes,
 } from './reglas';
-import { ErrorNegocio } from '@/utils/errores';
+import { ErrorCitasFueraDeHorario, ErrorNegocio } from '@/utils/errores';
 import { cruza, horarioDia, ocupacion } from '@/utils/franjas';
-import { fechaLocal, fechaTexto, HORA, horaTexto } from '@/utils/fechas';
-import { citaFueraDeHorario, errorHorario, HORARIO_INICIAL } from '@/utils/horario';
+import { fechaLocal, HORA, horaTexto } from '@/utils/fechas';
+import {
+  citasFueraDeHorario,
+  errorHorario,
+  HORARIO_INICIAL,
+  mensajeCitasFuera,
+} from '@/utils/horario';
 import { validarNumero } from '@/utils/validaciones';
 
 const CLAVE = 'citas-bedoya:v1';
@@ -338,13 +343,13 @@ export const repositorio = {
       exigirDoctor(actor);
       const invalido = errorHorario(horario);
       if (invalido) throw new ErrorNegocio('HORARIO_INVALIDO', invalido);
-      const afectada = citaFueraDeHorario(db.citas, horario, new Date());
-      if (afectada)
-        throw new ErrorNegocio(
-          'CITAS_FUERA_DE_HORARIO',
-          `El ${fechaTexto(afectada.inicio).replace(',', '')} hay una cita de ${afectada.pacienteNombre} a las ${horaTexto(afectada.inicio)} que quedaría fuera del nuevo horario. Cancélala o reprográmala antes de guardar.`,
-          afectada.id,
-        );
+      const afectadas = citasFueraDeHorario(db.citas, horario, new Date()).map((c) => ({
+        id: c.id,
+        pacienteNombre: c.pacienteNombre,
+        inicio: c.inicio,
+      }));
+      if (afectadas.length)
+        throw new ErrorCitasFueraDeHorario(afectadas, mensajeCitasFuera(afectadas));
       db.horario = JSON.parse(JSON.stringify(horario));
       return db.horario;
     }),
