@@ -1,13 +1,14 @@
 // C08 Horario de atención · C09 Editar horas del día · C10 Citas fuera del nuevo horario
 import { useState } from 'react';
-import { Pressable, Switch, View } from 'react-native';
+import { Pressable, ScrollView, Switch, View } from 'react-native';
 import { router } from 'expo-router';
 import type { HorarioAtencion } from '@/models';
 import { useAccion, useDatos } from '@/hooks/useDatos';
 import { repositorio } from '@/services/repositorio';
-import { Boton, ErrorAviso, Estado, HojaInferior, Pantalla, Texto } from '@/components/ui';
+import { Boton, ErrorAviso, Estado, HojaInferior, Icono, Pantalla, Texto } from '@/components/ui';
 import SelectorHora from '@/components/SelectorHora';
-import { ErrorNegocio } from '@/utils/errores';
+import { ErrorNegocio, type CitaAfectada } from '@/utils/errores';
+import { fechaTexto, horaTexto } from '@/utils/fechas';
 import {
   buscarDia,
   errorJornada,
@@ -71,6 +72,16 @@ function Editor({ inicial }: { inicial: HorarioAtencion }) {
     accion.error instanceof ErrorNegocio && accion.error.codigo === 'CITAS_FUERA_DE_HORARIO'
       ? accion.error
       : null;
+  // C10: todas las citas que impiden guardar (las trae el error)
+  const afectadas: CitaAfectada[] =
+    conflicto && 'afectadas' in conflicto && Array.isArray(conflicto.afectadas)
+      ? (conflicto.afectadas as CitaAfectada[])
+      : [];
+
+  function abrirCita(id: string) {
+    accion.reset();
+    router.push(`/cita/${id}`);
+  }
   const errorJornadaActual = edicion ? errorJornada(desde, hasta) : null;
 
   function cambiarDia(diaSemana: number, abierto: boolean) {
@@ -241,16 +252,28 @@ function Editor({ inicial }: { inicial: HorarioAtencion }) {
       <HojaInferior visible={!!conflicto} cerrar={() => accion.reset()}>
         <Texto className="font-semibold text-lg">No se puede guardar el horario</Texto>
         <Texto className="text-muted">{conflicto?.message}</Texto>
-        {conflicto?.referencia ? (
-          <Boton
-            onPress={() => {
-              const id = conflicto.referencia;
-              accion.reset();
-              router.push(`/cita/${id}`);
-            }}
-          >
-            Ver la cita
-          </Boton>
+        {afectadas.length ? (
+          <ScrollView style={{ maxHeight: 260 }} contentContainerStyle={{ gap: 8 }}>
+            {afectadas.map((c) => (
+              <Pressable
+                key={c.id}
+                accessibilityRole="button"
+                accessibilityLabel={`Ver la cita de ${c.pacienteNombre}, ${fechaTexto(c.inicio, true)}, ${horaTexto(c.inicio)}`}
+                onPress={() => abrirCita(c.id)}
+                className="flex-row items-center bg-navy-50 rounded-[14px] px-4 min-h-[56px] active:opacity-70"
+              >
+                <View className="flex-1 py-2">
+                  <Texto className="font-medium">{c.pacienteNombre}</Texto>
+                  <Texto className="text-xs text-muted">
+                    {fechaTexto(c.inicio, true)} · {horaTexto(c.inicio)}
+                  </Texto>
+                </View>
+                <Icono nombre="chevron" size={16} />
+              </Pressable>
+            ))}
+          </ScrollView>
+        ) : conflicto?.referencia ? (
+          <Boton onPress={() => abrirCita(conflicto.referencia ?? '')}>Ver la cita</Boton>
         ) : null}
         <Boton variant="text" onPress={() => accion.reset()}>
           Entendido
