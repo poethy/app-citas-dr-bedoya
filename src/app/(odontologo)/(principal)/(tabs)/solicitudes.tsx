@@ -55,7 +55,7 @@ export default function Solicitudes() {
       <ErrorAviso error={accion.error} />
       { 
       citas.length ? (
-        citas.map((c) => (
+        citas.filter((c) => c.pacienteNombre == buscarFiltro).map((c) => (
           <Tarjeta key={c.id}>
             <View className="flex-row justify-between">
               <Texto className="font-semibold">{c.pacienteNombre}</Texto>
