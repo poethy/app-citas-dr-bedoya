@@ -13,6 +13,7 @@ Requisito del curso (sección 7 del documento del proyecto). Una fila por avance
 | 2026-11-18 | Hito 4 · Integración | Base: estado vencida, precio y duración acordados, RPC actualizar_horario; pruebas de la base sin depender de la hora | Juan José Ospina | #7, #9 | Postgres no deja usar un valor nuevo de un enum en la misma transacción; dos pruebas fallaban según la hora | | Aplicar en Supabase |
 | 2026-11-18 | Hito 2 · Interfaz y lógica | Pantallas C08–C10: horario por día, edición en pasos de 15 min y aviso de citas fuera del horario | Juan José Ospina | #8 | Las hojas inferiores perdían el margen en la web | | Integración remota |
 | 2026-11-18 | Hito 3 · Datos y ubicación | App conectada a Supabase: Auth real, listado y detalle de citas por HTTP con Axios, RPC para las escrituras y datos de prueba para presentar | Juan José Ospina | #10 | El paciente no ve citas ajenas: sus franjas salen de disponibilidad_dia; `declare` rompía el empaquetado de Metro | | Prueba en Android y con el cliente |
+| 2026-11-18 | Hito 4 · Integración | Concurrencia entre citas y bloqueos (B3): candado por fecha en la base, aplicado en Supabase; bitácora, matriz académica, informe y guía de prueba con el cliente | Juan José Ospina | #11, #12, #13 | Una función STABLE no veía la fila que otra transacción acababa de confirmar | | Prueba en Android y con el cliente |
 
 ## Implementación del frontend en revisión
 
