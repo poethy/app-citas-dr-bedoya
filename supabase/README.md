@@ -60,6 +60,7 @@ Edge Function enviar-notificaciones ──► Expo Push ──► teléfonos con
 | `migrations/…_estado_vencida.sql` | Agrega el estado `vencida` (va solo porque Postgres no deja usar un valor nuevo de un enum en la misma transacción) |
 | `migrations/…_cita_acordada_y_vencimiento.sql` | Precio y duración acordados en cada cita; vencimiento de solicitudes, aviso `vencida` y RPC ajustadas (F2, B4) |
 | `migrations/…_vencer_solicitudes_cron.sql` | pg_cron cada minuto: pendientes cuya hora llegó pasan a vencida |
+| `migrations/…_ocupacion_serializada.sql` | Candado por fecha para que una cita y un bloqueo creados al mismo tiempo no se crucen (B3) |
 | `migrations/…_actualizar_horario.sql` | RPC `actualizar_horario` para C08–C10 (horario de la semana y almuerzo) |
 | `functions/enviar-notificaciones/` | Edge Function que manda las notificaciones por Expo Push |
 | `../src/types/database.ts` | Tipos TypeScript generados de la base, para la app |
@@ -78,7 +79,7 @@ Los nombres de las migraciones coinciden con las versiones registradas en el pro
 
 ## Probar las reglas sin Supabase
 
-`pruebas/` corre las migraciones y el seed en un PostgreSQL real dentro de Node ([PGlite](https://pglite.dev)), sin Docker ni cuenta, y revisa 58 casos: agendar, choques (RF-06), almuerzo, horario, anticipación (RF-29), cancelación fuera de plazo (RF-12), aprobación (RF-09), bloqueos (RF-19), registro desde el consultorio (RF-07), permisos por rol (RF-03), avisos, recordatorios y los datos que piden las pantallas (número de cita, consultorio, perfil, pestaña Aprobadas), precio y duración acordados, solicitudes vencidas y el horario editable (C08–C10).
+`pruebas/` corre las migraciones y el seed en un PostgreSQL real dentro de Node ([PGlite](https://pglite.dev)), sin Docker ni cuenta, y revisa 63 casos: agendar, choques (RF-06), almuerzo, horario, anticipación (RF-29), cancelación fuera de plazo (RF-12), aprobación (RF-09), bloqueos (RF-19), registro desde el consultorio (RF-07), permisos por rol (RF-03), avisos, recordatorios y los datos que piden las pantallas (número de cita, consultorio, perfil, pestaña Aprobadas), precio y duración acordados, solicitudes vencidas y el horario editable (C08–C10).
 
 El seed y las pruebas usan la agenda del jueves 19 de noviembre de 2026. `correr.mjs` cambia esas fechas por el próximo jueves que esté a más de 48 h, así que las pruebas dan lo mismo sin importar el día o la hora en que se corran.
 

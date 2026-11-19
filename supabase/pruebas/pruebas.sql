@@ -193,3 +193,16 @@ select 'C08 respuesta: ' || public.actualizar_horario('[{"dia_semana":1,"hora_in
 select prueba.probar('Sin almuerzo (null) se guarda', $$ select public.actualizar_horario('[{"dia_semana":4,"hora_inicio":"08:00","hora_fin":"18:00"},{"dia_semana":5,"hora_inicio":"08:00","hora_fin":"18:00"}]', null) $$);
 reset role;
 select prueba.probar('Sin almuerzo no quedan bloqueos de almuerzo', $$ do $x$ begin if exists (select 1 from public.bloqueos_recurrentes where motivo = 'Almuerzo') then raise exception 'quedó'; end if; end $x$ $$);
+
+-- ===== B3: ocupación serializada por fecha =====
+select prueba.probar('B3 validar_franja es VOLATILE (ve lo que otro acaba de confirmar)', $$ do $x$ begin if (select provolatile from pg_proc where proname = 'validar_franja') <> 'v' then raise exception 'sigue STABLE'; end if; end $x$ $$);
+select prueba.probar('B3 el trigger de bloqueos toma el candado de la fecha', $$ do $x$ begin if position('bloquear_ocupacion' in (select prosrc from pg_proc where proname = 'trg_bloqueos_validar')) = 0 then raise exception 'sin candado'; end if; end $x$ $$);
+set role authenticated;
+set request.jwt.claim.sub = '00000000-0000-0000-0000-0000000000a1';
+select prueba.probar('B3 la app no puede llamar bloquear_ocupacion', $$ select public.bloquear_ocupacion(now()) $$, 'permission denied for function bloquear_ocupacion');
+reset role;
+set role authenticated;
+set request.jwt.claim.sub = '00000000-0000-0000-0000-0000000000d1';
+select prueba.probar('B3 con el candado se sigue rechazando el bloqueo sobre una cita', $$ select public.crear_bloqueo('2026-11-19 14:30-05', '2026-11-19 15:00-05', 'Reunión') $$, 'CHOQUE_CON_CITA');
+select prueba.probar('B3 y se sigue rechazando la cita sobre un bloqueo', $$ select public.registrar_cita_consultorio('Pedro Gil', '311 222 3344', (select id from public.servicios where nombre='Valoración general'), '2026-11-19 16:45-05') $$, 'HORARIO_NO_DISPONIBLE');
+reset role;
