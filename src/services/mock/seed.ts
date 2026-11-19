@@ -3,7 +3,10 @@ import { fechaLocal, instante, MINUTO, sumarDias } from '@/utils/fechas';
 import { HORARIO_INICIAL } from '@/utils/horario';
 
 export function crearDatosIniciales(claveDemo: string): BaseDatos {
-  const fecha = sumarDias(fechaLocal(), 2);
+  // La agenda de ejemplo va en el primer día hábil (lunes a viernes) desde pasado mañana:
+  // un sábado cierra a las 12:00 m. y el domingo está cerrado, y las citas quedarían fuera.
+  let fecha = sumarDias(fechaLocal(), 2);
+  while ([0, 6].includes(instante(fecha, 720).getUTCDay())) fecha = sumarDias(fecha, 1);
   const servicios: Servicio[] = [
     {
       id: 'valoracion',
