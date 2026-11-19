@@ -37,6 +37,12 @@
     "web": {
       "bundler": "metro",
       "output": "single"
-    }
+    },
+    "extra": {
+      "eas": {
+        "projectId": "c1007952-fb86-4510-8f99-fde0cc9f7f54"
+      }
+    },
+    "owner": "marlborovfx"
   }
 }
