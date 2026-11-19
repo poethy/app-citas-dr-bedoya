@@ -1,6 +1,6 @@
 # Handoff de App Citas Dr Camilo Bedoya
 
-Actualizado el 18 de noviembre de 2026. La app está conectada a Supabase (Auth real, datos por HTTP con Axios y escrituras por RPC) y conserva la demo local sin `.env`. Todas las migraciones están aplicadas. Pendiente: APK con EAS para push, prueba en Android real, prueba con el cliente y datos reales del consultorio.
+Actualizado el 19 de noviembre de 2026. La app está conectada a Supabase (Auth real, datos por HTTP con Axios y escrituras por RPC) y conserva la demo local sin `.env`. Todas las migraciones están aplicadas. Hay una versión web publicada en Vercel como plan B para presentar: https://app-citas-dr-bedoya.vercel.app. Pendiente: APK con EAS para push, prueba en Android real, prueba con el cliente y datos reales del consultorio.
 
 ## Cliente y alcance
 
@@ -51,6 +51,15 @@ Todo está aplicado en el proyecto de Supabase y documentado en [supabase/README
 
 Las pruebas de la base (`supabase/pruebas`) ya no dependen del día ni la hora. `supabase/datos_prueba.sql` carga una agenda de ejemplo para presentar y se puede repetir.
 
+### Versión web en Vercel (plan B)
+
+Si Expo no corre en el equipo de la presentación, la app se abre en el navegador: **https://app-citas-dr-bedoya.vercel.app**. Usa el mismo Supabase que la app (mismas cuentas y datos) y está pensada para celular: se puede abrir desde el teléfono o en el computador, donde se ve como una columna de celular centrada.
+
+- `vercel.json` compila con `npx expo export --platform web` y manda todas las rutas a `index.html`; `public/index.html` es la plantilla web (idioma, color de la barra del navegador, altura real de la pantalla en el celular y sin zoom al tocar un campo).
+- Las variables `EXPO_PUBLIC_SUPABASE_URL` y `EXPO_PUBLIC_SUPABASE_KEY` están en el proyecto de Vercel `app-citas-dr-bedoya`; el `.env` no se sube (`.vercelignore`).
+- En la web no hay push (los avisos se ven al abrir la app) y el mapa pide la ubicación al navegador.
+- Para publicar cambios de `main`: `npx vercel deploy --prod` desde la raíz del repo, con la sesión de Vercel del dueño del proyecto.
+
 ### Notificaciones push
 
 La app registra el token del teléfono en `tokens_push` al iniciar sesión, lo borra al cerrarla y abre la cita al tocar el aviso. El push solo llega en un APK de EAS (`eas.json`, perfil `preview`) con `projectId` y credenciales de FCM; los pasos están en el README.
@@ -95,7 +104,9 @@ Referencia de código: `C:/Users/StivenM/Documents/react-native-parcial`, especi
 - [x] Horario de atención (C08–C10) en Figma, base y app.
 - [x] Concurrencia entre citas y bloqueos en la base.
 - [x] Registro del token de push; falta el APK con EAS.
-- [x] Matriz académica, informe en borrador, guía de prueba con el cliente y bitácora hasta el PR #17.
+- [x] Matriz académica, informe en borrador, guía de prueba con el cliente y bitácora hasta el PR #23.
+- [x] Ajustes de uso: ver contraseña, avisos separados en «Por ver» y «Vistos», skeleton de G01 en las listas, A00 Splash al abrir (también el splash nativo) y Nueva cita con Supabase.
+- [x] Versión web publicada en Vercel como plan B.
 - [ ] APK con EAS y prueba de push en un teléfono.
 - [ ] Prueba de punta a punta con cuentas reales y en Android (mapa, permisos y GPS incluidos); capturas.
 - [ ] Prueba con el cliente y al menos un ajuste derivado.
@@ -105,7 +116,7 @@ Referencia de código: `C:/Users/StivenM/Documents/react-native-parcial`, especi
 ## Pendientes de datos y configuración
 
 - **Datos del consultorio:** horario, almuerzo, precios, coordenadas y teléfono son de prueba hasta que el consultorio confirme los reales. Al tenerlos se actualizan `configuracion`, `horario_atencion` y `servicios` en Supabase; la app los toma sola.
-- **Supabase:** desactivar «Confirm email» (Authentication → Sign In / Providers → Email) para que los pacientes entren sin confirmar el correo, y activar la protección de contraseñas filtradas (Authentication → Attack Protection; suele ser del plan Pro).
+- **Supabase:** «Confirm email» ya está desactivado y las contraseñas piden mínimo 8 caracteres con letras y números. La protección de contraseñas filtradas (Authentication → Attack Protection) es del plan Pro; no es obligatoria.
 - Siguen abiertos en B9 de la especificación: recordatorios y resumen diario, vinculación segura de pacientes que llamaron, confirmación de reprogramaciones del doctor y verificación de correo.
 
 ## Antecedentes del diseño

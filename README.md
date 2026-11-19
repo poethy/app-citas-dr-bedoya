@@ -70,8 +70,17 @@ Para usar Supabase, copia `.env.template` como `.env` y llena `EXPO_PUBLIC_SUPAB
 Con Supabase:
 
 - **Odontólogo:** la cuenta se crea una sola vez (ver `supabase/README.md` y `supabase/crear_odontologo.sql`).
-- **Pacientes:** se registran desde la app. Para que entren sin confirmar el correo, desactiva «Confirm email» en Supabase → Authentication → Sign In / Providers → Email.
+- **Pacientes:** se registran desde la app. «Confirm email» está desactivado en Supabase (Authentication → Sign In / Providers → Email), así que entran sin confirmar el correo.
 - **Datos de prueba para presentar:** corre `supabase/datos_prueba.sql` en el SQL Editor. Crea una agenda de ejemplo en los próximos días hábiles y pone coordenadas de prueba del consultorio. Se puede repetir antes de cada presentación.
+
+### Versión web en Vercel (plan B para presentar)
+
+La app está publicada en **https://app-citas-dr-bedoya.vercel.app**, conectada al mismo Supabase. Sirve si Expo no corre en el equipo de la presentación: se abre desde el navegador del celular o del computador (en pantallas anchas se ve como una columna de celular).
+
+- Configuración: `vercel.json` (compila con `npx expo export --platform web`, todas las rutas van a `index.html`) y `public/index.html` (plantilla web para celular).
+- Variables: `EXPO_PUBLIC_SUPABASE_URL` y `EXPO_PUBLIC_SUPABASE_KEY` en el proyecto de Vercel `app-citas-dr-bedoya`. El `.env` no se sube (`.vercelignore`).
+- Publicar de nuevo después de fusionar en `main`: `npx vercel deploy --prod` (pide `npx vercel login` la primera vez).
+- En la web no hay push y el mapa pide permiso de ubicación al navegador.
 
 ### Notificaciones push (avisos con la app cerrada)
 
